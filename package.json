@@ -1,0 +1,53 @@
+{
+  "name": "reflex-virtual-dom-renderer",
+  "version": "0.0.0",
+  "description": "React based renderer for reflex",
+  "keywords": [
+    "reflex",
+    "react",
+    "renderer"
+  ],
+  "author": "Irakli Gozalishvili <rfobic@gmail.com> (http://jeditoolkit.com)",
+  "homepage": "https://github.com/Gozala/reflex-react-renderer",
+  "main": "./lib/index.js",
+  "dependencies": {
+    "blanks": "0.0.2",
+    "object-as-dictionary": "0.0.3",
+    "react": "0.13.3",
+    "virtual-dom": "2.1.1"
+  },
+  "devDependencies": {
+    "babel": "5.6.14",
+    "babel-plugin-flow-comments": "1.0.9",
+    "reflex": "0.0.40",
+    "tap": "1.1.0",
+    "tape": "2.3.2"
+  },
+  "babel": {
+    "sourceMaps": "inline",
+    "optional": [
+      "spec.protoToAssign"
+    ]
+  },
+  "scripts": {
+    "test": "tap lib/test/test-*.js",
+    "build-node": "babel ./src --out-dir ./lib --plugins flow-comments --blacklist flow",
+    "build-browser": "babel ./src --out-dir ./dist --modules umdStrict",
+    "build": "npm run build-node && npm run build-browser",
+    "prepublish": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Gozala/reflex-react-renderer.git",
+    "web": "https://github.com/Gozala/reflex-react-renderer"
+  },
+  "bugs": {
+    "url": "https://github.com/Gozala/reflex-react-renderer/issues/"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/Gozala/reflex-react-renderer/License.md"
+    }
+  ]
+}
