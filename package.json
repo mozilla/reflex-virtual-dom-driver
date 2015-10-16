@@ -1,7 +1,7 @@
 {
   "name": "reflex-virtual-dom-renderer",
   "version": "0.0.0",
-  "description": "React based renderer for reflex",
+  "description": "virtual-dom based renderer for reflex",
   "keywords": [
     "reflex",
     "react",
@@ -13,7 +13,6 @@
   "dependencies": {
     "blanks": "0.0.2",
     "object-as-dictionary": "0.0.3",
-    "react": "0.13.3",
     "virtual-dom": "2.1.1"
   },
   "devDependencies": {
