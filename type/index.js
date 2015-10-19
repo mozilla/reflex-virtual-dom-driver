@@ -3,8 +3,8 @@
 import {Dictionary} from "object-as-dictionary"
 import * as Signal from "reflex/type/signal"
 import * as DOM from "./dom"
-import * as Renderer from "reflex/type/renderer"
-import * as VirtualDOM from "./virtual-dom"
+import * as Driver from "reflex/type/driver"
+import * as VirtualDOM from "reflex/type/dom"
 
 // hooks
 
@@ -57,17 +57,17 @@ export type AddressBook <message>
 export type redirect <message>
   = (addressBook:AddressBook<message>, index:number) => Address<message>
 
-export type Key = Renderer.Key
-export type TagName = Renderer.TagName
-export type AttributeDictionary = Renderer.AttributeDictionary
-export type StyleDictionary = Renderer.StyleDictionary
-export type PropertyDictionary = Renderer.PropertyDictionary
-export type VirtualNode = Renderer.VirtualNode
-export type TextNode = Renderer.TextNode
-export type Text = Renderer.Text
-export type ChildNode = Renderer.ChildNode
-export type ThunkNode = Renderer.ThunkNode
-export type View = Renderer.View
-export type text = Renderer.text
-export type node = Renderer.node
-export type thunk = Renderer.thunk
+export type Key = VirtualDOM.Key
+export type TagName = VirtualDOM.TagName
+export type AttributeDictionary = VirtualDOM.AttributeDictionary
+export type StyleDictionary = VirtualDOM.StyleDictionary
+export type PropertyDictionary = VirtualDOM.PropertyDictionary
+export type VirtualNode = VirtualDOM.VirtualNode
+export type VirtualText = VirtualDOM.VirtualText
+export type Text = VirtualDOM.Text
+export type VirtualTree = VirtualDOM.VirtualTree
+export type Thunk = VirtualDOM.Thunk
+export type View = VirtualDOM.View
+export type text = Driver.text
+export type node = Driver.node
+export type thunk = Driver.thunk

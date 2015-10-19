@@ -10,7 +10,7 @@ import isThunk from "virtual-dom/vnode/is-thunk"
 import isHook from "virtual-dom/vnode/is-vhook"
 import version from "virtual-dom/vnode/version"
 import SoftSetHook from "virtual-dom/virtual-hyperscript/hooks/soft-set-hook"
-import {TextNode} from "./text"
+import {VirtualText} from "./text"
 import {empty} from "blanks/lib/array"
 import {blank} from "blanks/lib/object"
 
@@ -21,7 +21,7 @@ import {supportedAttributes} from "./hooks/attribute"
 export class VirtualNode {
   /*::
 
-  $$typeof: "VirtualNode";
+  $type: "VirtualNode";
   type: "VirtualNode";
   version: number;
 
@@ -30,14 +30,14 @@ export class VirtualNode {
   namespace: ?string;
   key: ?string;
   properties: type.PropertyDictionary;
-  children: Array<type.ChildNode>;
+  children: Array<type.VirtualTree>;
   count: number;
   descendants: number;
   hasWidgets: boolean;
   hasThunks: boolean;
   hooks: ?type.HookDictionary;
   */
-  constructor(tagName/*:string*/, namespace/*:?string*/, properties/*:type.PropertyDictionary*/, children/*:Array<type.ChildNode>*/) {
+  constructor(tagName/*:string*/, namespace/*:?string*/, properties/*:type.PropertyDictionary*/, children/*:Array<type.VirtualTree>*/) {
     this.tagName = tagName
     this.namespace = namespace
     this.key = properties.key != null ? String(properties.key) : null
@@ -116,9 +116,9 @@ export class VirtualNode {
       const child = children[index]
 
       if (typeof(child) === "string") {
-        children[index] = new TextNode(child)
+        children[index] = new VirtualText(child)
       }
-      else if (child.$$typeof === "OrphanNode") {
+      else if (child.$type === "LazyTree") {
         children[index] = child.force()
         index = index - 1
       } else if (child instanceof VirtualNode) {
@@ -153,7 +153,7 @@ export class VirtualNode {
     this.hooks = hooks
   }
 }
-VirtualNode.prototype.$$typeof = "VirtualNode"
+VirtualNode.prototype.$type = "VirtualNode"
 VirtualNode.prototype.type = "VirtualNode"
 VirtualNode.prototype.version = version
 

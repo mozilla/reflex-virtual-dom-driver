@@ -7,16 +7,16 @@ import * as type from "../type"
 const redirect/*:type.redirect*/ = (addressBook, index) =>
   action => addressBook[index](action);
 
-export class ThunkNode {
+export class Thunk {
   /*::
-  $$typeof: "ThunkNode";
+  $type: "Thunk";
   type: "Thunk";
   key: type.Key;
   view: type.View;
   args: Array<any>;
 
   addressBook: ?type.AddressBook<any>;
-  value: ?type.ChildNode;
+  value: ?type.VirtualTree;
   */
   constructor(key/*:type.Key*/, view/*:type.View*/, args/*:Array<any>*/) {
     this.key = key
@@ -25,8 +25,8 @@ export class ThunkNode {
     this.addressBook = null
     this.value = null
   }
-  render(previous/*:?type.ChildNode*/) {
-    if (previous instanceof ThunkNode && previous.value != null) {
+  render(previous/*:?type.VirtualTree*/) {
+    if (previous instanceof Thunk && previous.value != null) {
       if (profile) {
         console.time(`${this.key}.receive`)
       }
@@ -121,9 +121,9 @@ export class ThunkNode {
     return this.value
   }
 }
-ThunkNode.prototype.type = "Thunk"
-ThunkNode.prototype.$$typeof = "ThunkNode"
+Thunk.prototype.type = "Thunk"
+Thunk.prototype.$type = "Thunk"
 
 let profile = null
 export const thunk/*:type.thunk*/ = (key, view, ...args) =>
-  new ThunkNode(key, view, args)
+  new Thunk(key, view, args)

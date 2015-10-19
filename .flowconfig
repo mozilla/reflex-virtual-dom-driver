@@ -4,8 +4,8 @@
 .*/node_modules/reflex/examples/.*
 .*/node_modules/reflex/lib/.*
 .*/node_modules/reflex/dist/.*
-.*/reflex-virtual-dom-renderer/lib/.*
-.*/reflex-virtual-dom-renderer/dist/.*
+.*/reflex-virtual-dom-driver/lib/.*
+.*/reflex-virtual-dom-driver/dist/.*
 
 [libs]
 ./node_modules/reflex/interfaces/

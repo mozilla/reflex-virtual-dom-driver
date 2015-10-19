@@ -3,30 +3,34 @@
 import diff from "virtual-dom/diff"
 import createElement from "virtual-dom/create-element"
 import patch from "virtual-dom/patch"
-import {TextNode, text} from "./text"
+import {VirtualText, text} from "./text"
 import {VirtualNode, node} from "./node"
-import {ThunkNode, thunk} from "./thunk"
+import {Thunk, thunk} from "./thunk"
 
 /*::
-import * as renderer from "reflex/type/renderer"
-import * as signal from "reflex/type/signal"
+import * as Driver from "reflex/type/driver"
+import * as Signal from "reflex/type/signal"
+import * as DOM from "reflex/type/dom"
 */
 
 export class Renderer {
   /*::
   target: Element;
-  mount: ?(Element & {reflexTree?: renderer.ChildNode});
-  value: renderer.RootNode;
+  mount: ?(Element & {reflexTree?: DOM.VirtualTree});
+  value: Driver.VirtualRoot;
   isScheduled: boolean;
   version: number;
-  address: signal.Address<renderer.ChildNode>;
+  address: Signal.Address<Driver.VirtualRoot>;
   execute: () => void;
+  timeGroupName: ?string;
 
-  node: renderer.node;
-  thunk: renderer.thunk;
-  text: renderer.text;
+  render: Driver.render;
+  node: Driver.node;
+  thunk: Driver.thunk;
+  // Note this must be optional in order to satisfy flow (see facebook/flow#952)
+  text: ?Driver.text;
   */
-  constructor({target}/*:{target: Element}*/) {
+  constructor({target, timeGroupName}/*:{target: Element, timeGroupName?:string}*/) {
     this.target = target
     this.mount = (target.children.length === 1 &&
                   target.children[0].reflexTree != null) ?
@@ -35,6 +39,7 @@ export class Renderer {
 
     this.address = this.receive.bind(this)
     this.execute = this.execute.bind(this)
+    this.timeGroupName = timeGroupName == null ? null : timeGroupName
 
     this.node = node
     this.thunk = thunk
@@ -43,7 +48,7 @@ export class Renderer {
   toString()/*:string*/{
     return `Renderer({target: ${this.target}})`
   }
-  receive(value/*:renderer.RootNode*/) {
+  receive(value/*:Driver.VirtualRoot*/) {
     this.value = value
     this.schedule()
   }
@@ -54,8 +59,9 @@ export class Renderer {
     }
   }
   execute(_/*:number*/) {
-    if (profile) {
-      console.time('render')
+    const {timeGroupName} = this
+    if (timeGroupName != null) {
+      console.time(`render ${timeGroupName}`)
     }
 
     const start = performance.now()
@@ -70,9 +76,6 @@ export class Renderer {
     // rather attempt to render updated states that end up being blocked
     // forever.
     this.isScheduled = false
-    if (profile) {
-      console.time('render')
-    }
 
     this.value.renderWith(this)
 
@@ -83,11 +86,11 @@ export class Renderer {
       console.warn(`Render took ${time}ms & will cause frame drop`)
     }
 
-    if (profile) {
-      console.timeEnd('render')
+    if (timeGroupName != null) {
+      console.time(`render ${timeGroupName}`)
     }
   }
-  render(tree/*:renderer.ChildNode*/) {
+  render(tree/*:DOM.VirtualTree*/) {
     const {mount, target} = this
     if (mount) {
       patch(mount, diff(mount.reflexTree, tree))
@@ -101,10 +104,3 @@ export class Renderer {
     }
   }
 }
-
-let profile = null
-export const time = (name/*:string*/)/*:void*/ =>
-  void(profile = `${name == null ? "" : name} `)
-
-export const timeEnd = () =>
-  void(profile = null)

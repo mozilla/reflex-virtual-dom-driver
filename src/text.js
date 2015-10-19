@@ -6,24 +6,21 @@ import version from "virtual-dom/vnode/version"
 import * as type from "../type"
 */
 
-export class TextNode {
+export class VirtualText {
   /*::
-  $$typeof: "TextNode";
+  $type: "VirtualText";
   type: "VirtualText";
   version: string;
-  text: string;
+  text: type.Text;
   */
 
-  constructor(text/*:string*/) {
+  constructor(text/*:type.Text*/) {
     this.text = text
-    this.$$typeof = "TextNode"
-    this.type = "VirtualText"
-    this.version = version
   }
 }
 
-TextNode.prototype.$$typeof = "TextNode"
-TextNode.prototype.type = "VirtualText"
-TextNode.prototype.version = version
+VirtualText.prototype.$type = "VirtualText"
+VirtualText.prototype.type = "VirtualText"
+VirtualText.prototype.version = version
 
-export const text/*:type.text*/ = text => new TextNode(text)
+export const text/*:type.text*/ = text => new VirtualText(text)
