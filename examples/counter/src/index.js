@@ -2,9 +2,9 @@
 
 import * as Counter from "./counter"
 import {start} from "reflex"
-import {Renderer} from "reflex-virtual-dom-renderer"
+import {Renderer} from "reflex-virtual-dom-driver"
 
-var app = start({
+const app = start({
   initial: Counter.create(window.app != null ?
                             window.app.model.value :
                             {value: 0}),
@@ -13,6 +13,6 @@ var app = start({
 });
 window.app = app
 
-var renderer = new Renderer({target: document.body})
+const renderer = new Renderer({target: document.body})
 
 app.view.subscribe(renderer.address)

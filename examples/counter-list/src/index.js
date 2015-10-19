@@ -1,10 +1,10 @@
 /* @flow */
 
-import * as CounterList from "./list"
+import * as CounterList from "./counter-list"
 import {start} from "reflex"
-import {Renderer} from "reflex-virtual-dom-renderer"
+import {Renderer} from "reflex-virtual-dom-driver"
 
-var app = start({
+const app = start({
   initial: CounterList.create(window.app != null ?
                                 window.app.model.value :
                                 {nextID: 0, entries: []}),
@@ -13,6 +13,6 @@ var app = start({
 });
 window.app = app
 
-var renderer = new Renderer({target: document.body})
+const renderer = new Renderer({target: document.body})
 
 app.view.subscribe(renderer.address)

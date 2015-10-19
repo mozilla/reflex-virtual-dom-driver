@@ -2,7 +2,7 @@
 
 import * as SpinSquarePair from "./spin-square-pair"
 import {start, Effects} from "reflex"
-import {Renderer} from "reflex-virtual-dom-renderer"
+import {Renderer} from "reflex-virtual-dom-driver"
 
 var app = start({
   initial: window.app != null ?

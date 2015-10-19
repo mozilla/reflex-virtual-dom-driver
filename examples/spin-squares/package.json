@@ -7,22 +7,20 @@
     "build": "NODE_ENV=production gulp build"
   },
   "dependencies": {
+    "eased": "0.0.3",
     "reflex": "latest",
-    "reflex-virtual-dom-renderer": "latest"
+    "reflex-virtual-dom-driver": "latest"
   },
   "devDependencies": {
     "browserify": "11.0.1",
     "watchify": "3.3.1",
-
     "babelify": "6.1.3",
     "browserify-hmr": "0.3.0",
     "hotify": "0.0.1",
-
     "babel-core": "5.8.23",
     "babel-runtime": "5.8.20",
     "ecstatic": "0.8.0",
     "flow-bin": "0.17.0",
-
     "gulp": "3.9.0",
     "gulp-sequence": "0.4.1",
     "gulp-sourcemaps": "1.5.2",

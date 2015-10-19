@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "reflex": "latest",
-    "reflex-virtual-dom-renderer": "latest"
+    "reflex-virtual-dom-driver": "latest"
   },
   "devDependencies": {
     "browserify": "11.0.1",

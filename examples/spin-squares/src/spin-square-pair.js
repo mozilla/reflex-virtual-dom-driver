@@ -1,65 +1,52 @@
 /* @flow */
-import * as SpinSquare from "./spin-square";
-import {html, forward, thunk, Effects} from "reflex";
 
-/*::
-import type {Address} from "reflex/type/signal";
-import type {VirtualNode} from "reflex/type/renderer";
+import * as SpinSquare from "./spin-square"
+import {html, forward, thunk, Effects} from "reflex"
 
-export type Model = {
-  left: SpinSquare.Model,
-  right: SpinSquare.Model
-};
-*/
+/*:: import * as type from "../type/spin-square-pair" */
 
-export const create = ({left, right}/*:Model*/)/*:Model*/ => ({
+export const create/*:type.create*/ = ({left, right}) => ({
+  type: "SpinSquarePair.Model",
   left: SpinSquare.create(left),
   right: SpinSquare.create(right)
 })
 
-export const initialize = ()/*:[Model, Effects<Action>]*/ => {
+export const initialize/*:type.initialize*/ = () => {
   const [left, leftFx] = SpinSquare.initialize()
   const [right, rightFx] = SpinSquare.initialize()
   return [
-    {left, right},
+    create({left, right}),
     Effects.batch([
-      leftFx.map(LeftAction),
-      rightFx.map(RightAction)
+      leftFx.map(asLeft),
+      rightFx.map(asRight)
     ])
   ]
 }
 
-/*::
-export type Left = {$typeof: 'Left', act: SpinSquare.Action};
-export type Right = {$typeof: 'Right', act: SpinSquare.Action};
-export type Action = Left|Right;
-*/
+export const asLeft/*:type.asLeft*/ = act =>
+  ({type: "SpinSquarePair.Left", act})
+
+export const asRight/*:type.asRight*/ = act =>
+  ({type: "SpinSquarePair.Right", act})
 
 
-export const LeftAction = (act/*:SpinSquare.Action*/)/*:Left*/ =>
-  ({$typeof: "Left", act})
-
-export const RightAction = (act/*:SpinSquare.Action*/)/*:Right*/ =>
-  ({$typeof: "Right", act})
-
-
-export const step = (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ => {
-  if (action.$typeof === "Left") {
+export const step/*:type.step*/ = (model, action) => {
+  if (action.type === "SpinSquarePair.Left") {
     const [left, fx] = SpinSquare.step(model.left, action.act)
-    return [create({left, right: model.right}), fx.map(LeftAction)]
+    return [create({left, right: model.right}), fx.map(asLeft)]
   }
-  if (action.$typeof === "Right") {
+  if (action.type === "SpinSquarePair.Right") {
     const [right, fx] = SpinSquare.step(model.right, action.act)
-    return [create({left:model.left, right}), fx.map(RightAction)]
+    return [create({left:model.left, right}), fx.map(asRight)]
   }
 
   return [model, Effects.none]
 }
 
-// View
-export var view = (model/*:Model*/, address/*:Address<Action>*/)/*:VirtualNode*/ =>
+
+export var view/*:type.view*/ = (model, address) =>
   html.div({key: "spin-square-pair",
                    style: {display: "flex"}}, [
-    thunk("left", SpinSquare.view, model.left, forward(address, LeftAction)),
-    thunk("right", SpinSquare.view, model.right, forward(address, RightAction))
+    thunk("left", SpinSquare.view, model.left, forward(address, asLeft)),
+    thunk("right", SpinSquare.view, model.right, forward(address, asRight))
   ])

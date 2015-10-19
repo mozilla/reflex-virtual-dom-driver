@@ -1,55 +1,45 @@
 /* @flow */
-import {Record, Union} from "typed-immutable";
 import {html, forward} from "reflex";
 
 /*::
-import type {Address} from "reflex/type/signal";
-import type {VirtualNode} from "reflex/type/renderer";
-
-export type Model = {value:number};
-export type Increment = {$typeof: 'Increment'};
-export type Decrement = {$typeof: 'Decrement'};
-export type Action = Increment|Decrement;
+import * as type from "../type/counter"
 */
 
+export const asIncrement/*:type.asIncrement*/ = () =>
+  ({type: "Counter.Increment"})
+export const asDecrement/*:type.asDecrement*/ = () =>
+  ({type: "Counter.Decrement"})
 
-const set = /*::<T>*/(record/*:T*/, field/*:string*/, value/*:any*/)/*:T*/ => {
-  const result = Object.assign({}, record)
-  result[field] = value
-  return result
-}
 
-export const create = ({value}/*:Model*/)/*:Model*/ => ({value})
-export const Inc = ()/*:Increment*/ => ({$typeof: 'Increment'})
-export const Dec = ()/*:Decrement*/ => ({$typeof: 'Decrement'})
+export const create/*:type.create*/ = ({value}) =>
+  ({type: "Counter.Model", value})
 
-export const update = (model/*:Model*/, action/*:Action*/)/*:Model*/ =>
-  action.$typeof === 'Increment' ?
-    set(model, 'value', model.value + 1) :
-  action.$typeof === 'Decrement' ?
-    set(model, 'value', model.value - 1) :
+export const update/*:type.update*/ = (model, action) =>
+  action.type === "Counter.Increment" ?
+    {type:model.type, value: model.value + 1} :
+  action.type === "Counter.Decrement" ?
+    {type:model.type, value: model.value - 1} :
   model
 
 const counterStyle = {
   value: {
-    fontWeight: 'bold'
+    fontWeight: "bold"
   }
 }
 
 // View
-export var view = (model/*:Model*/, address/*:Address<Action>*/)/*:VirtualNode*/ => {
-  return html.span({key: 'counter'}, [
+export const view/*:type.view*/ = (model, address) =>
+  html.span({key: "counter"}, [
     html.button({
-      key: 'decrement',
-      onClick: forward(address, Dec)
+      key: "decrement",
+      onClick: forward(address, asDecrement)
     }, ["-"]),
     html.span({
-      key: 'value',
+      key: "value",
       style: counterStyle.value,
     }, [String(model.value)]),
     html.button({
-      key: 'increment',
-      onClick: forward(address, Inc)
+      key: "increment",
+      onClick: forward(address, asIncrement)
     }, ["+"])
-  ]);
-};
+  ])

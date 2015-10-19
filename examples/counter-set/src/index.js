@@ -1,8 +1,8 @@
 /* @flow */
 
-import * as CounterSet from "./set"
+import * as CounterSet from "./counter-set"
 import {start} from "reflex"
-import {Renderer} from "reflex-virtual-dom-renderer"
+import {Renderer} from "reflex-virtual-dom-driver"
 
 var app = start({
   initial: CounterSet.create(window.app != null ?

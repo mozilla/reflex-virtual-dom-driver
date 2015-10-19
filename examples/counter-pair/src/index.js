@@ -1,16 +1,16 @@
 /* @flow */
 
-import * as Pair from "./pair"
+import * as CounterPair from "./counter-pair"
 import {start} from "reflex"
-import {Renderer} from "reflex-virtual-dom-renderer"
+import {Renderer} from "reflex-virtual-dom-driver"
 
 var app = start({
-  initial: Pair.create(window.app != null ?
-                        window.app.model.value :
-                        {top: {value: 0}
-                        ,bottom: {value: 0}}),
-  update: Pair.update,
-  view: Pair.view
+  initial: CounterPair.create(window.app != null ?
+                                window.app.model.value :
+                                {top: {value: 0},
+                                 bottom: {value: 0}}),
+  update: CounterPair.update,
+  view: CounterPair.view
 });
 window.app = app
 
