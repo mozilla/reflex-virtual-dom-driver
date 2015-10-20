@@ -1,7 +1,7 @@
 /* @flow */
 import {Record, Union} from "typed-immutable"
 import {html, forward, Effects, Task} from "reflex"
-import {ease, easeOutBounce, float} from "./easing"
+import {ease, easeOutBounce, float} from "eased"
 
 /*:: import * as type from "../type/spin-square" */
 
