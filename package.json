@@ -1,14 +1,14 @@
 {
-  "name": "reflex-virtual-dom-renderer",
-  "version": "0.0.0",
-  "description": "virtual-dom based renderer for reflex",
+  "name": "reflex-virtual-dom-driver",
+  "version": "0.0.1",
+  "description": "virtual-dom based driver for reflex",
   "keywords": [
     "reflex",
     "react",
     "renderer"
   ],
   "author": "Irakli Gozalishvili <rfobic@gmail.com> (http://jeditoolkit.com)",
-  "homepage": "https://github.com/Gozala/reflex-react-renderer",
+  "homepage": "https://github.com/Gozala/reflex-virtual-dom-driver",
   "main": "./lib/index.js",
   "dependencies": {
     "blanks": "0.0.2",
@@ -37,16 +37,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Gozala/reflex-react-renderer.git",
-    "web": "https://github.com/Gozala/reflex-react-renderer"
+    "url": "https://github.com/Gozala/reflex-virtual-dom-driver.git",
+    "web": "https://github.com/Gozala/reflex-virtual-dom-driver"
   },
   "bugs": {
-    "url": "https://github.com/Gozala/reflex-react-renderer/issues/"
+    "url": "https://github.com/Gozala/reflex-virtual-dom-driver/issues/"
   },
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/Gozala/reflex-react-renderer/License.md"
+      "url": "https://github.com/Gozala/reflex-virtual-dom-driver/License.md"
     }
   ]
 }
