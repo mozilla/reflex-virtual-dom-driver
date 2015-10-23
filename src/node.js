@@ -69,9 +69,13 @@ export class VirtualNode {
               hooks = {}
             }
 
-            const handler = eventHandler(property)
-            hooks[key] = handler
-            properties[key] = handler
+            // TODO: Find out why flow did not cought that proprety
+            // could be void here
+            if (property != null) {
+              const handler = eventHandler(property)
+              hooks[key] = handler
+              properties[key] = handler
+            }
           }
           // Special handlind of input.value
           else if (key === 'value' &&
