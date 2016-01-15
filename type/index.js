@@ -15,6 +15,7 @@ export type Hook <target> = {
 
 
 export type nameOverrides = Dictionary<string>
+export type supportedProperties = Dictionary<string>
 export type supportedAttributes = Dictionary<string>
 export type HookDictionary = Dictionary<Hook<any>>
 

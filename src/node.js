@@ -17,6 +17,7 @@ import {blank} from "blanks/lib/object"
 
 import {supportedEvents, eventHandler} from "./hooks/event-handler"
 import {supportedAttributes} from "./hooks/attribute"
+import {supportedProperties} from "./hooks/property"
 
 export class VirtualNode {
   /*::
@@ -95,7 +96,22 @@ export class VirtualNode {
               attributes = {}
             }
 
-            attributes[supportedAttributes[key]] = property
+            // If attribute value is `null` omit it so that virtual-dom
+            // will actually remove that attribute. If attribute value is
+            // boolean than treate attribute as a flag if `true` just set
+            // attribute with no value otherwise omit to remove it.
+            if (property !== null && property !== false) {
+              attributes[supportedAttributes[key]] =
+                ( property === true
+                ? ""
+                : property
+                )
+            }
+
+            delete properties[key]
+          }
+          else if (supportedProperties[key] != null) {
+            properties[supportedProperties[key]] = property
             delete properties[key]
           }
           else if (key.indexOf('data-') === 0 || key.indexOf('aria-') === 0) {

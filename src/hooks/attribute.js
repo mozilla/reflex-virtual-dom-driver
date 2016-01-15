@@ -7,32 +7,44 @@ import * as type from "../../type/index"
 
 const nameOverrides/*:type.nameOverrides*/ = dictionary({
   className: 'class',
-  htmlFor: 'for'
+  htmlFor: 'for',
+  acceptCharset: 'accept-charset',
+  httpEquiv: 'http-equiv',
+  clipPath: 'clip-path',
+  fillOpacity: 'fill-opacity',
+  fontFamily: 'font-family',
+  fontSize: 'font-size',
+  markerEnd: 'marker-end',
+  markerMid: 'marker-mid',
+  markerStart: 'marker-start',
+  stopColor: 'stop-color',
+  stopOpacity: 'stop-opacity',
+  strokeDasharray: 'stroke-dasharray',
+  strokeLinecap: 'stroke-linecap',
+  strokeOpacity: 'stroke-opacity',
+  strokeWidth: 'stroke-width',
+  textAnchor: 'text-anchor',
+  xlinkActuate: 'xlink:actuate',
+  xlinkArcrole: 'xlink:arcrole',
+  xlinkHref: 'xlink:href',
+  xlinkRole: 'xlink:role',
+  xlinkShow: 'xlink:show',
+  xlinkTitle: 'xlink:title',
+  xlinkType: 'xlink:type',
+  xmlBase: 'xml:base',
+  xmlLang: 'xml:lang',
+  xmlSpace: 'xml:space'
 })
 
 export const supportedAttributes/*:type.supportedAttributes*/ =
- `accept acceptCharset accessKey action allowFullScreen allowTransparency alt
-async autoComplete autoFocus autoPlay capture cellPadding cellSpacing charSet
-challenge checked classID className cols colSpan content contentEditable contextMenu
-controls coords crossOrigin data dateTime defer dir disabled download draggable
-encType form formAction formEncType formMethod formNoValidate formTarget frameBorder
-headers height hidden high href hrefLang htmlFor httpEquiv icon id inputMode
-keyParams keyType label lang list loop low manifest marginHeight marginWidth max
-maxLength media mediaGroup method min minlength multiple muted name noValidate open
-optimum pattern placeholder poster preload radioGroup readOnly rel required role
-rows rowSpan sandbox scope scoped scrolling seamless selected shape size sizes
-span spellCheck src srcDoc srcSet start step summary tabIndex target title
-type useMap value width wmode wrap
-
-autoCapitalize autoCorrect
-
-property
-
-itemProp itemScope itemType itemRef itemID
-
-unselectable
-
-results autoSave
+ `allowFullScreen allowTransparency capture cellPadding cellSpacing charSet
+challenge classID className cols colSpan contentEditable contextMenu
+dir encType  form formAction formEncType formMethod formTarget frameBorder
+height hidden inputMode is keyParams keyType list loop manifest marginHeight
+marginWidth maxLength media method nonce role rows rowSpan scrolling seamless
+size sizes span srcSet start width wmode wrap about datatype inlist prefix
+property resource typeof vocab autoCapitalize autoCorrect itemProp
+itemProp itemScope itemType itemRef itemID security unselectable
 
 clipPath cx cy d dx dy fill fillOpacity fontFamily
 fontSize fx fy gradientTransform gradientUnits markerEnd
