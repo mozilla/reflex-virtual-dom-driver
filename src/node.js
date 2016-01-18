@@ -79,9 +79,14 @@ export class VirtualNode {
             }
           }
           // Special handlind of input.value
-          else if (key === 'value' &&
-                   tagName.toLowerCase() === 'input' &&
-                   property != null) {
+          else if
+            ( key === 'value' &&
+              property != null &&
+              ( tagName.toLowerCase() === 'input' ||
+                tagName.toLowerCase() === 'textarea'
+              )
+            )
+          {
             if (hooks == null) {
               hooks = {}
             }
