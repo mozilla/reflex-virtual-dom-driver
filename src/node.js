@@ -1,7 +1,8 @@
 /* @flow */
 
 /*::
-import * as type from "../type"
+import type {PropertyDictionary, VirtualTree} from "reflex"
+import type {HookDictionary} from "./node"
 */
 
 import isVirtualNode from "virtual-dom/vnode/is-vnode"
@@ -10,7 +11,7 @@ import isThunk from "virtual-dom/vnode/is-thunk"
 import isHook from "virtual-dom/vnode/is-vhook"
 import version from "virtual-dom/vnode/version"
 import SoftSetHook from "virtual-dom/virtual-hyperscript/hooks/soft-set-hook"
-import {VirtualText} from "./text"
+import {text} from "./text"
 import {empty} from "blanks/lib/array"
 import {blank} from "blanks/lib/object"
 
@@ -18,6 +19,7 @@ import {blank} from "blanks/lib/object"
 import {supportedEvents, eventHandler} from "./hooks/event-handler"
 import {supportedAttributes} from "./hooks/attribute"
 import {supportedProperties} from "./hooks/property"
+
 
 export class VirtualNode {
   /*::
@@ -27,21 +29,25 @@ export class VirtualNode {
   version: number;
 
 
-  tagName: type.TagName;
+  tagName: string;
   namespace: ?string;
   key: ?string;
-  properties: type.PropertyDictionary;
-  children: Array<type.VirtualTree>;
+  properties: PropertyDictionary;
+  children: Array<VirtualTree>;
   count: number;
   descendants: number;
   hasWidgets: boolean;
   hasThunks: boolean;
-  hooks: ?type.HookDictionary;
+  hooks: ?HookDictionary;
   */
-  constructor(tagName/*:string*/, namespace/*:?string*/, properties/*:type.PropertyDictionary*/, children/*:Array<type.VirtualTree>*/) {
+  constructor(tagName/*:string*/, namespace/*:?string*/, properties/*:PropertyDictionary*/, children/*:Array<VirtualTree>*/) {
     this.tagName = tagName
     this.namespace = namespace
-    this.key = properties.key != null ? String(properties.key) : null
+    this.key =
+      ( properties.key != null
+      ? String(properties.key)
+      : null
+      )
     this.children = children
 
 
@@ -63,6 +69,8 @@ export class VirtualNode {
           }
 
           hooks[key] = property
+
+          delete properties[key]
         } else {
           // Event handlers
           if (supportedEvents[key] != null) {
@@ -75,7 +83,8 @@ export class VirtualNode {
             if (property != null) {
               const handler = eventHandler(property)
               hooks[key] = handler
-              properties[key] = handler
+
+              delete properties[key]
             }
           }
           // Special handlind of input.value
@@ -93,7 +102,8 @@ export class VirtualNode {
 
             const hook = new SoftSetHook(property)
             hooks[key] = hook
-            properties[key] = hook
+
+            delete properties[key]
           }
           // Attributes
           else if (supportedAttributes[key] != null) {
@@ -141,7 +151,7 @@ export class VirtualNode {
       const child = children[index]
 
       if (typeof(child) === "string") {
-        children[index] = new VirtualText(child)
+        children[index] = text(child)
       }
       else if (child.$type === "LazyTree") {
         children[index] = child.force()
@@ -183,8 +193,20 @@ VirtualNode.prototype.type = "VirtualNode"
 VirtualNode.prototype.version = version
 
 
-export const node/*:type.node*/ = (tagName, properties, children) =>
-  new VirtualNode(tagName,
-                  null,
-                  properties == null ? blank : properties,
-                  children == null ? empty : children)
+export const node =
+  ( tagName/*:string*/
+  , properties/*:?PropertyDictionary*/
+  , children/*:?Array<VirtualTree>*/
+  )/*:VirtualNode*/ =>
+  new VirtualNode
+  ( tagName
+  , null
+  , ( properties == null
+    ? blank
+    : properties
+    )
+  , ( children == null
+    ? empty
+    : children
+    )
+  )

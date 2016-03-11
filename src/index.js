@@ -3,14 +3,14 @@
 import diff from "virtual-dom/diff"
 import createElement from "virtual-dom/create-element"
 import patch from "virtual-dom/patch"
-import {VirtualText, text} from "./text"
-import {VirtualNode, node} from "./node"
-import {Thunk, thunk} from "./thunk"
+import {text} from "./text"
+import {node} from "./node"
+import {thunk} from "./thunk"
 
 /*::
-import * as Driver from "reflex/type/driver"
-import * as Signal from "reflex/type/signal"
-import * as DOM from "reflex/type/dom"
+import type {Address, VirtualTree, VirtualRoot} from "reflex"
+import {Driver} from "reflex"
+import {performance} from "./performance"
 */
 
 // Invariants:
@@ -91,11 +91,11 @@ const animationScheduler = new AnimationScheduler()
 export class Renderer {
   /*::
   target: Element;
-  mount: ?(Element & {reflexTree?: DOM.VirtualTree});
-  value: Driver.VirtualRoot;
+  mount: ?(Element & {reflexTree?: VirtualTree});
+  value: VirtualRoot;
   state: number;
   version: number;
-  address: Signal.Address<Driver.VirtualRoot>;
+  address: Address<VirtualRoot>;
   timeGroupName: ?string;
 
   execute: (time:Time) => void;
@@ -132,7 +132,7 @@ export class Renderer {
   toString()/*:string*/{
     return `Renderer({target: ${this.target}})`
   }
-  receive(value/*:Driver.VirtualRoot*/) {
+  receive(value/*:VirtualRoot*/) {
     if (this.value !== value) {
       this.value = value
       animationScheduler.schedule(this.execute)
@@ -159,7 +159,7 @@ export class Renderer {
       console.time(`render ${timeGroupName}`)
     }
   }
-  render(tree/*:DOM.VirtualTree*/) {
+  render(tree/*:VirtualTree*/) {
     const {mount, target} = this
     if (mount) {
       patch(mount, diff(mount.reflexTree, tree))

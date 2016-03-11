@@ -1,11 +1,12 @@
 /* @flow */
 
 import {dictionary} from "object-as-dictionary"
+
 /*::
-import * as type from "../../type/index"
+import type {Dictionary} from "object-as-dictionary"
 */
 
-export const supportedProperties/*:type.supportedProperties*/ = dictionary({
+export const supportedProperties/*:Dictionary<string>*/ = dictionary({
   autoComplete: 'autocomplete',
   autoFocus: 'autofocus',
   autoPlay: 'autoplay',

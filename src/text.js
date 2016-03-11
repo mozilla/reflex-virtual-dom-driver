@@ -3,7 +3,7 @@
 import version from "virtual-dom/vnode/version"
 
 /*::
-import * as type from "../type"
+import type {Text} from "./text"
 */
 
 export class VirtualText {
@@ -11,10 +11,10 @@ export class VirtualText {
   $type: "VirtualText";
   type: "VirtualText";
   version: string;
-  text: type.Text;
+  text: Text;
   */
 
-  constructor(text/*:type.Text*/) {
+  constructor(text/*:Text*/) {
     this.text = text
   }
 }
@@ -23,4 +23,6 @@ VirtualText.prototype.$type = "VirtualText"
 VirtualText.prototype.type = "VirtualText"
 VirtualText.prototype.version = version
 
-export const text/*:type.text*/ = text => new VirtualText(text)
+export const text =
+  (text/*:string*/)/*:VirtualText*/ =>
+  new VirtualText(text)
