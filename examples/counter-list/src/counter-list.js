@@ -2,36 +2,31 @@
 
 import * as Counter from "./counter";
 import {html, forward, thunk} from "reflex";
-import {always} from "./util";
 
 /*::
-import type {ID, Tagged, ByName, Model, Action} from "./counter-list"
+import type {ID, Model, Action} from "./counter-list"
 import type {Address, DOM} from "reflex";
 */
 
 const Add =
-  { type: "Add"
-  , source: void(0)
-  , create: () => Add
-  }
+  () =>
+  ( { type: "Add"
+    }
+  )
 
 const Remove =
-  { type: "Remove"
-  , source: void(0)
-  , create: () => Remove
-  }
+  () =>
+  ( { type: "Remove"
+    }
+  )
 
-export const Modify =
-  (name/*:ID*/, action/*:Counter.Action*/)/*:Tagged<"Modify", ByName<Counter.Action>>*/ =>
+const Modify =
+  (name/*:ID*/) =>
+  (action/*:Counter.Action*/)/*:Action*/ =>
   ( { type: "Modify"
     , source: {name, action}
     }
   )
-
-const by =
-  (name/*:ID*/)/*:(action:Counter.Action) => Tagged<"Modify", ByName<Counter.Action>>*/ =>
-  (action/*:Counter.Action*/) =>
-  Modify(name, action)
 
 export const init =
   ()/*:Model*/ =>
@@ -94,7 +89,7 @@ const viewNamed =
   ( String(model.name)
   , Counter.view
   , model.counter
-  , forward(address, by(model.name))
+  , forward(address, Modify(model.name))
   )
 
 export const view =
@@ -106,16 +101,16 @@ export const view =
       ( { key: "controls"
         }
       , [ html.button
-          ( { key: "remove"
-            , onClick: forward(address, Remove.create)
-            }
-          , ["Remove"]
-          )
-        , html.button
           ( { key: "add"
-            , onClick: forward(address, Add.create)
+            , onClick: forward(address, Add)
             }
           , ["Add"]
+          )
+        , html.button
+          ( { key: "remove"
+            , onClick: forward(address, Remove)
+            }
+          , ["Remove"]
           )
         ]
       )

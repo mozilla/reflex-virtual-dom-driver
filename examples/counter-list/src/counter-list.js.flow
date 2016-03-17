@@ -15,27 +15,20 @@ export type Model =
   , counters: Array<NamedCounter>
   }
 
-
-export type Tagged <type, action> =
-  { type: type
-  , source: action
-  }
-
-export type ByName <action> =
-  { name: ID
-  , action: action
-  }
-
 export type Action
-  = Tagged<"Add", void>
-  | Tagged<"Remove", void>
-  | Tagged<"Modify", ByName<Counter.Action>>
+  = { type: "Add" }
+  | { type: "Remove" }
+  | { type: "Modify"
+    , source:
+      { name: ID
+      , action: Counter.Action
+      }
+    }
 
-declare export var Add:Tagged<"Add", void>
-declare export var Remove:Tagged<"Remove", void>
 declare export function Modify
-  (id:ID, action:Counter.Action):
-  Tagged<"Modify", ByName<Counter.Action>>
+  ( name:ID
+  , action:Counter.Action
+  ):Action
 
 
 declare export function init (): Model
