@@ -1,5 +1,3 @@
-'use strict';
-
 import browserify from 'browserify';
 import gulp from 'gulp';
 import source from 'vinyl-source-stream';
@@ -16,120 +14,119 @@ import sequencial from 'gulp-sequence';
 import ecstatic from 'ecstatic';
 import hmr from 'browserify-hmr';
 import hotify from 'hotify';
+import manifest from './package.json';
 
-var settings = {
-  port: process.env.DEV_PORT || '6061',
-  cache: {},
-  plugin: [],
-  transform: [
-    babelify.configure({
-      "optional": [
-        "spec.protoToAssign",
-        "runtime"
-      ],
-      "blacklist": []
-    })
-  ],
-  debug: true,
-  watch: false,
-  compression: null
-};
+class Bundler {
+  constructor(options) {
+    this.options = options
 
-var Bundler = function(entry) {
-  this.entry = entry
-  this.compression = settings.compression
-  this.build = this.build.bind(this);
+    this.build = this.build.bind(this);
+    this.plugin = []
+    this.transform = []
+    this.cache = {}
+    this.entry = path.join
+      ( options.input
+      , options.main
+      )
 
-  this.bundler = browserify({
-    entries: ['./src/' + entry],
-    debug: settings.debug,
-    cache: {},
-    transform: settings.transform,
-    plugin: settings.plugin
-  });
 
-  this.watcher = settings.watch &&
-    watchify(this.bundler)
-    .on('update', this.build);
+    if (options.babel != null) {
+      this.transform.push(babelify)
+    }
+
+    if (options.hotreload != null) {
+      this.transform.push(hotify)
+      this.plugin.push(hmr)
+    }
+
+    this.bundler = browserify
+    ( { entries: [this.entry]
+      , debug:
+        ( options.sourceMaps != null
+        ? false
+        : options.sourceMaps === false
+        ? false
+        : true
+        )
+      , cache: this.cache
+      , transform: this.transform
+      , plugin: this.plugin
+      }
+    )
+
+    if (options.watch) {
+      this.watcher =
+        watchify(this.bundler)
+        .on('update', this.build)
+    }
+  }
+  bundle() {
+    gutil.log(`Begin bundling: '${this.entry}'`);
+    const output =
+      ( this.options.watch
+      ? this.watcher.bundle()
+      : this.bundler.bundle()
+      )
+    return output
+  }
+  build() {
+    const transforms =
+      [ source(this.options.main)
+      , buffer()
+      , ( this.options.sourceMaps == null
+        ? null
+        : sourcemaps.init({loadMaps: true})
+        )
+      , ( this.options.compression == null
+        ? null
+        : uglify(this.options.compression)
+        )
+      , ( this.options.sourceMaps == null
+        ? null
+        : sourcemaps.write(this.options.sourceMaps.output)
+        )
+      , gulp.dest(this.options.output)
+      ]
+
+    const output =
+      transforms.reduce
+      ( (input, transform) =>
+        ( transform != null
+        ? input.pipe(transform)
+        : input
+        )
+      , this
+        .bundle()
+        .on('error', (error) => {
+          gutil.beep();
+          console.error(`Failed to browserify: '${this.entry}'`, error.message)
+        })
+      )
+
+    return output.on('end', () => gutil.log(`Completed bundling: '${this.options.input}'`))
+  }
 }
-Bundler.prototype.bundle = function() {
-  gutil.log(`Begin bundling: '${this.entry}'`);
-  return this.watcher ? this.watcher.bundle() : this.bundler.bundle();
-}
 
-Bundler.prototype.build = function() {
-  var bundle = this
-    .bundle()
-    .on('error', (error) => {
-      gutil.beep();
-      console.error(`Failed to browserify: '${this.entry}'`, error.message);
-    })
-    .pipe(source(this.entry + '.js'))
-    .pipe(buffer())
-    .pipe(sourcemaps.init({loadMaps: true}))
-    .on('error', (error) => {
-      gutil.beep();
-      console.error(`Failed to make source maps for: '${this.entry}'`,
-                    error.message);
-    });
-
-  return (this.compression ? bundle.pipe(uglify(this.compression)) : bundle)
-    .on('error', (error) => {
-      gutil.beep();
-      console.error(`Failed to bundle: '${this.entry}'`,
-                    error.message);
-    })
-    .pipe(sourcemaps.write('./'))
-    .pipe(gulp.dest('./dist/'))
-    .on('end', () => {
-      gutil.log(`Completed bundling: '${this.entry}'`);
-    });
-}
-
-var bundler = function(entry) {
-  return gulp.task(entry, function() {
-    return new Bundler(entry).build();
-  });
-}
-
-// Starts a static http server that serves browser.html directory.
-gulp.task('server', function() {
+var server = config => () => {
   var server = http.createServer(ecstatic({
-    root: path.join(module.filename, '../'),
-    cache: 0
+    root: path.join(module.filename, config.root),
+    cache: config.cache
   }));
-  server.listen(settings.port);
-});
+  server.listen(config.port);
+  gutil.log(`Navigate to http://localhost:${config.port}/`)
+}
+var bundler = config => () => new Bundler(config).build()
 
-gulp.task('compressor', function() {
-  settings.compression = {
-    mangle: true,
-    compress: true,
-    acorn: true
-  };
-});
 
-gulp.task('watcher', function() {
-  settings.watch = true
-});
+Object.keys(manifest.builds).forEach(name => {
+  const config = manifest.builds[name]
 
-gulp.task('hotreload', function() {
-  settings.plugin.push(hmr);
-  settings.transform.push(hotify);
-});
-
-bundler('index');
-
-gulp.task('build', [
-  'compressor',
-  'index'
-]);
-
-gulp.task('watch', [
-  'watcher',
-  'index'
-]);
-
-gulp.task('develop', sequencial('watch', 'server'));
-gulp.task('live', ['hotreload', 'develop']);
-gulp.task('default', ['live']);
+  if (config.server) {
+    gulp.task(`serve ${name}`, server(config.server))
+    gulp.task(`build ${name}`, bundler(config))
+    gulp.task(name, sequencial(`build ${name}`, `serve ${name}`))
+  }
+  else {
+    gulp.task(name, bundler(config))
+  }
+})
