@@ -1,0 +1,28 @@
+/* @flow */
+
+import type {Address, DOM} from "reflex"
+
+type Tag <type> =
+  { type: type
+  }
+
+export type Model =
+  { value: number
+  }
+
+export type Action
+  = Tag<"Increment">
+  | Tag<"Decrement">
+
+
+declare export var Increment:Tag<"Increment">
+declare export var Decrement:Tag<"Decrement">
+
+declare export function init (value:number):
+  Model
+
+declare export function update (model:Model, action:Action):
+  Model
+
+declare export function view (model:Model, address:Address<Action>):
+  DOM
