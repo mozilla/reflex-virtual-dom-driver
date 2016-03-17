@@ -2,21 +2,14 @@
 
 import type {Address, DOM} from "reflex"
 
-type Tag <type> =
-  { type: type
-  }
-
 export type Model =
   { value: number
   }
 
 export type Action
-  = Tag<"Increment">
-  | Tag<"Decrement">
+  = {type: "Increment"}
+  | {type: "Decrement"}
 
-
-declare export var Increment:Tag<"Increment">
-declare export var Decrement:Tag<"Decrement">
 
 declare export function init (value:number):
   Model
