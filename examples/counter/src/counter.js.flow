@@ -1,6 +1,6 @@
 /* @flow */
 
-import type {Address, VirtualTree} from "reflex"
+import type {Address, DOM} from "reflex"
 
 type Tag <type> =
   { type: type
@@ -25,4 +25,4 @@ declare export function update (model:Model, action:Action):
   Model
 
 declare export function view (model:Model, address:Address<Action>):
-  VirtualTree
+  DOM

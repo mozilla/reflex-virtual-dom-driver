@@ -4,7 +4,7 @@ import {html, forward} from "reflex"
 
 /*::
 import type {Model, Action} from "./counter"
-import type {Address, VirtualTree} from "reflex"
+import type {Address, DOM} from "reflex"
 */
 
 const Increment =
@@ -42,7 +42,7 @@ const counterStyle = {
 export const view =
   ( model/*:Model*/
   , address/*:Address<Action>*/
-  )/*:VirtualTree*/ =>
+  )/*:DOM*/ =>
   html.span
   ( { key: "counter"
     }

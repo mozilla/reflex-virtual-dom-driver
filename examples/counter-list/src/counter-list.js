@@ -6,7 +6,7 @@ import {always} from "./util";
 
 /*::
 import type {ID, Tagged, ByName, Model, Action} from "./counter-list"
-import type {Address, VirtualTree} from "reflex";
+import type {Address, DOM} from "reflex";
 */
 
 const Add =
@@ -98,7 +98,7 @@ const viewNamed =
   )
 
 export const view =
-  (model/*:Model*/, address/*:Address<Action>*/)/*:VirtualTree*/ =>
+  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
   html.div
   ( { key: "CounterList"
     }

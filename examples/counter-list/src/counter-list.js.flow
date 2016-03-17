@@ -1,6 +1,6 @@
 /* @flow */
 
-import type {Address, VirtualTree} from "reflex"
+import type {Address, DOM} from "reflex"
 import * as Counter from "./counter"
 
 export type ID = number
@@ -45,4 +45,4 @@ declare export function update
 
 declare export function view
   (model:Model, address:Address<Action>):
-  VirtualTree
+  DOM
