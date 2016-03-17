@@ -10,24 +10,24 @@ import type {Action, Model} from "./counter-pair"
 
 
 const Top =
-  (action/*:Counter.Action*/)/*:Action*/ =>
+  (action) =>
   ( { type: "Top"
     , source: action
     }
   )
 
 const Bottom =
-  (action/*:Counter.Action*/)/*:Action*/ =>
+  (action) =>
   ( { type: "Bottom"
     , source: action
     }
   )
 
 const Reset =
-  { type: "Reset"
-  , source: void(0)
-  , create: () => Reset
-  }
+  () =>
+  ( { type: "Reset"
+    }
+  )
 
 export const init =
   (top/*:number*/, bottom/*:number*/)/*:Model*/ =>
@@ -82,7 +82,7 @@ export const view =
         }
       , [ html.button
           ( { key: "reset"
-            , onClick: forward(address, Reset.create)
+            , onClick: forward(address, Reset)
             }
           , ["Reset"]
           )

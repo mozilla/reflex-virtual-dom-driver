@@ -8,15 +8,10 @@ export type Model =
   , bottom: Counter.Model
   }
 
-export type Tagged <tag, action> =
-  { type: tag
-  , source: action
-  }
-
 export type Action
-  = Tagged<"Top", Counter.Action>
-  | Tagged<"Bottom", Counter.Action>
-  | Tagged<"Reset", void>
+  = { type: "Top", source: Counter.Action }
+  | { type: "Bottom", source: Counter.Action }
+  | { type: "Reset" }
 
 declare export function init
   (top:number, bottom:number):Model

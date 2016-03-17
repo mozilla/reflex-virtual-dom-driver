@@ -8,14 +8,16 @@ import type {Address, DOM} from "reflex"
 */
 
 const Increment =
-  { type: "Increment"
-  , create: () => Increment
-  }
+  () =>
+  ( { type: "Increment"
+    }
+  )
 
 const Decrement =
-  { type: "Decrement"
-  , create: () => Decrement
-  }
+  () =>
+  ( { type: "Decrement"
+    }
+  )
 
 export const init =
   (value/*:number*/)/*:Model*/ =>
@@ -25,18 +27,18 @@ export const update =
   ( model/*:Model*/
   , action/*:Action*/
   )/*:Model*/ =>
-  ( action.type === Increment.type
+  ( action.type === "Increment"
   ? { value: model.value + 1 }
-  : action.type === Decrement.type
+  : action.type === "Decrement"
   ? { value: model.value - 1 }
   : model
   )
 
-const counterStyle = {
-  value: {
-    fontWeight: "bold"
+const counterStyle =
+  { value:
+    { fontWeight: "bold"
+    }
   }
-}
 
 
 export const view =
@@ -48,7 +50,7 @@ export const view =
     }
   , [ html.button
       ( { key: "decrement"
-        , onClick: forward(address, Decrement.create)
+        , onClick: forward(address, Decrement)
         }
       , ["-"]
       )
@@ -60,7 +62,7 @@ export const view =
       )
     , html.button
       ( { key: "increment"
-        , onClick: forward(address, Increment.create)
+        , onClick: forward(address, Increment)
         }
       , ["+"]
       )
