@@ -2,74 +2,129 @@
 
 import * as Counter from "./counter";
 import {html, forward, thunk} from "reflex";
+import {always} from "./util";
 
 /*::
-import * as type from "../type/counter-list"
+import type {ID, Tagged, ByName, Model, Action} from "./counter-list"
+import type {Address, VirtualTree} from "reflex";
 */
 
-export const asAdd/*:type.asAdd*/ = () => ({type: "CounterList.Add"})
-export const asRemove/*:type.asRemove*/ = () => ({type: "CounterList.Remove"})
-export const asBy/*:type.asBy*/ = id => act =>
-  ({type: "CounterList.ModifyByID", id, act})
+const Add =
+  { type: "Add"
+  , source: void(0)
+  , create: () => Add
+  }
 
+const Remove =
+  { type: "Remove"
+  , source: void(0)
+  , create: () => Remove
+  }
 
-export const create/*:type.create*/ = ({nextID, entries}) =>
-  ({type: "CounterList.Model", nextID, entries})
+export const Modify =
+  (name/*:ID*/, action/*:Counter.Action*/)/*:Tagged<"Modify", ByName<Counter.Action>>*/ =>
+  ( { type: "Modify"
+    , source: {name, action}
+    }
+  )
 
-export const add/*:type.add*/ = model => create({
-  nextID: model.nextID + 1,
-  entries: model.entries.concat([{
-    type: "CounterList.Entry",
-    id: model.nextID,
-    model: Counter.create({value: 0})
-  }])
-})
+const by =
+  (name/*:ID*/)/*:(action:Counter.Action) => Tagged<"Modify", ByName<Counter.Action>>*/ =>
+  (action/*:Counter.Action*/) =>
+  Modify(name, action)
 
-export const remove/*:type.remove*/ = model => create({
-  nextID: model.nextID,
-  entries: model.entries.slice(1)
-})
+export const init =
+  ()/*:Model*/ =>
+  ( { nextID: 1
+    , counters: []
+    }
+  )
 
-export const modify/*:type.modify*/ = (model, id, action) => create({
-  nextID: model.nextID,
-  entries: model.entries.map(entry =>
-    entry.id !== id ?
-      entry :
-      {type: entry.type, id: id, model: Counter.update(entry.model, action)})
-})
+const add =
+  model =>
+  ( { nextID: model.nextID + 1
+    , counters:
+      [ ...model.counters
+      , { name: model.nextID
+        , counter: Counter.init(0)
+        }
+      ]
+    }
+  )
 
-export const update/*:type.update*/ = (model, action) =>
-  action.type === "CounterList.Add" ?
-    add(model, action) :
-  action.type === "CounterList.Remove" ?
-    remove(model, action) :
-  action.type === "CounterList.ModifyByID" ?
-    modify(model, action.id, action.act) :
-    model;
+const remove =
+  model =>
+  ( { nextID: model.nextID
+    , counters: model.counters.slice(1)
+    }
+  )
+
+const modify =
+  (model, {name, action}) =>
+  ( { nextID: model.nextID
+    , counters:
+      model.counters.map
+      ( ( named ) =>
+        ( named.name === name
+        ? { name
+          , counter: Counter.update(named.counter, action)
+          }
+        : named
+        )
+      )
+    }
+  )
+
+export const update =
+  (model/*:Model*/, action/*:Action*/)/*:Model*/ =>
+  ( action.type === "Add"
+  ? add(model)
+  : action.type === "Remove"
+  ? remove(model)
+  : action.type === "Modify"
+  ? modify(model, action.source)
+  : model
+  );
 
 
 // View
-const viewEntry/*:type.viewEntry*/ = ({id, model}, address) =>
-  html.div({key: id}, [
-    Counter.view(model, forward(address, asBy(id)))
-  ])
+const viewNamed =
+  (model, address) =>
+  thunk
+  ( String(model.name)
+  , Counter.view
+  , model.counter
+  , forward(address, by(model.name))
+  )
 
-export const view/*:type.view*/ = (model, address) =>
-  html.div({key: "CounterList"}, [
-    html.div({key: "controls"}, [
-      html.button({
-        key: "remove",
-        onClick: forward(address, asRemove)
-      }, ["Remove"]),
-      html.button({
-        key: "add",
-        onClick: forward(address, asAdd)
-      }, ["Add"])
-    ]),
-    html.div({
-      key: "entries"
-    }, model.entries.map(entry => thunk(String(entry.id),
-                                        viewEntry,
-                                        entry,
-                                        address)))
-  ])
+export const view =
+  (model/*:Model*/, address/*:Address<Action>*/)/*:VirtualTree*/ =>
+  html.div
+  ( { key: "CounterList"
+    }
+  , [ html.div
+      ( { key: "controls"
+        }
+      , [ html.button
+          ( { key: "remove"
+            , onClick: forward(address, Remove.create)
+            }
+          , ["Remove"]
+          )
+        , html.button
+          ( { key: "add"
+            , onClick: forward(address, Add.create)
+            }
+          , ["Add"]
+          )
+        ]
+      )
+    , html.div
+      ( { key: "counters"
+        }
+      , model.counters.map
+        ( named => viewNamed(named, address)
+        )
+      )
+    ]
+  )

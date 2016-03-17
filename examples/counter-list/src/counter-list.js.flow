@@ -1,0 +1,48 @@
+/* @flow */
+
+import type {Address, VirtualTree} from "reflex"
+import * as Counter from "./counter"
+
+export type ID = number
+
+export type NamedCounter =
+  { name: ID
+  , counter: Counter.Model
+  }
+
+export type Model =
+  { nextID: ID
+  , counters: Array<NamedCounter>
+  }
+
+
+export type Tagged <type, action> =
+  { type: type
+  , source: action
+  }
+
+export type ByName <action> =
+  { name: ID
+  , action: action
+  }
+
+export type Action
+  = Tagged<"Add", void>
+  | Tagged<"Remove", void>
+  | Tagged<"Modify", ByName<Counter.Action>>
+
+declare export var Add:Tagged<"Add", void>
+declare export var Remove:Tagged<"Remove", void>
+declare export function Modify
+  (id:ID, action:Counter.Action):
+  Tagged<"Modify", ByName<Counter.Action>>
+
+
+declare export function init (): Model
+declare export function update
+  (model:Model, action:Action):
+  Model
+
+declare export function view
+  (model:Model, address:Address<Action>):
+  VirtualTree

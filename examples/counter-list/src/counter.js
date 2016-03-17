@@ -1,25 +1,36 @@
 /* @flow */
-import {html, forward} from "reflex";
+
+import {html, forward} from "reflex"
 
 /*::
-import * as type from "../type/counter"
+import type {Model, Action} from "./counter"
+import type {Address, VirtualTree} from "reflex"
 */
 
-export const asIncrement/*:type.asIncrement*/ = () =>
-  ({type: "Counter.Increment"})
-export const asDecrement/*:type.asDecrement*/ = () =>
-  ({type: "Counter.Decrement"})
+const Increment =
+  { type: "Increment"
+  , create: () => Increment
+  }
 
+const Decrement =
+  { type: "Decrement"
+  , create: () => Decrement
+  }
 
-export const create/*:type.create*/ = ({value}) =>
-  ({type: "Counter.Model", value})
+export const init =
+  (value/*:number*/)/*:Model*/ =>
+  ({ value })
 
-export const update/*:type.update*/ = (model, action) =>
-  action.type === "Counter.Increment" ?
-    {type:model.type, value: model.value + 1} :
-  action.type === "Counter.Decrement" ?
-    {type:model.type, value: model.value - 1} :
-  model
+export const update =
+  ( model/*:Model*/
+  , action/*:Action*/
+  )/*:Model*/ =>
+  ( action.type === Increment.type
+  ? { value: model.value + 1 }
+  : action.type === Decrement.type
+  ? { value: model.value - 1 }
+  : model
+  )
 
 const counterStyle = {
   value: {
@@ -27,19 +38,31 @@ const counterStyle = {
   }
 }
 
-// View
-export const view/*:type.view*/ = (model, address) =>
-  html.span({key: "counter"}, [
-    html.button({
-      key: "decrement",
-      onClick: forward(address, asDecrement)
-    }, ["-"]),
-    html.span({
-      key: "value",
-      style: counterStyle.value,
-    }, [String(model.value)]),
-    html.button({
-      key: "increment",
-      onClick: forward(address, asIncrement)
-    }, ["+"])
-  ])
+
+export const view =
+  ( model/*:Model*/
+  , address/*:Address<Action>*/
+  )/*:VirtualTree*/ =>
+  html.span
+  ( { key: "counter"
+    }
+  , [ html.button
+      ( { key: "decrement"
+        , onClick: forward(address, Decrement.create)
+        }
+      , ["-"]
+      )
+    , html.span
+      ( { key: "value"
+        , style: counterStyle.value
+        }
+      , [ `${model.value}` ]
+      )
+    , html.button
+      ( { key: "increment"
+        , onClick: forward(address, Increment.create)
+        }
+      , ["+"]
+      )
+    ]
+  )
