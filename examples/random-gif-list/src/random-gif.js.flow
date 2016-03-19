@@ -1,0 +1,29 @@
+/* @flow */
+
+import type {DOM, Address} from "reflex"
+import {Effects} from "reflex"
+
+export type URI = string
+
+export type Model =
+  { topic: string
+  , uri: URI
+  }
+
+export type Action
+  = { type: "RequestMore" }
+  | { type: "ReceiveNewGif"
+    , source: ?URI
+    }
+
+declare export function init
+  (topic:string):
+  [Model, Effects<Action>]
+
+declare export function update
+  (model:Model, action:Action):
+  [Model, Effects<Action>]
+
+declare export function view
+  (model:Model, address:Address<Action>):
+  DOM

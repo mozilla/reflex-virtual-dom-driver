@@ -1,11 +1,11 @@
 /* @flow */
 
 
-import type {VirtualTree, Thunk} from "reflex"
+import type {DOM, Thunk} from "reflex"
 
 declare export function thunk <a, b, c, d, e, f, g, h, i, j>
   ( key:string
-  , view:(a:a, b:b, c:c, d:d, e:e, f:f, g:g, h:h, i:i, j:j) => VirtualTree
+  , view:(a:a, b:b, c:c, d:d, e:e, f:f, g:g, h:h, i:i, j:j) => DOM
   , a:a
   , b:b
   , c:c

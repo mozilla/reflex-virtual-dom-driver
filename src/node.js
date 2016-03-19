@@ -69,8 +69,6 @@ export class VirtualNode {
           }
 
           hooks[key] = property
-
-          delete properties[key]
         } else {
           // Event handlers
           if (supportedEvents[key] != null) {
@@ -83,8 +81,7 @@ export class VirtualNode {
             if (property != null) {
               const handler = eventHandler(property)
               hooks[key] = handler
-
-              delete properties[key]
+              properties[key] = handler
             }
           }
           // Special handlind of input.value
@@ -102,8 +99,7 @@ export class VirtualNode {
 
             const hook = new SoftSetHook(property)
             hooks[key] = hook
-
-            delete properties[key]
+            properties[key] = hook
           }
           // Attributes
           else if (supportedAttributes[key] != null) {
@@ -202,7 +198,7 @@ export const node =
   ( tagName
   , null
   , ( properties == null
-    ? blank
+    ? (blank/*:PropertyDictionary*/)
     : properties
     )
   , ( children == null

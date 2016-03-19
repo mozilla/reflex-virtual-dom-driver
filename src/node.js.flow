@@ -1,7 +1,7 @@
 /* @flow */
 
 import type {Dictionary} from "object-as-dictionary"
-import type {TagName, PropertyDictionary, VirtualNode, VirtualTree} from "reflex"
+import type {TagName, PropertyDictionary, VirtualNode, DOM} from "reflex"
 
 export type Hook <target> = {
   hook: (node:target, name:string, previous:any) => void,
@@ -13,6 +13,6 @@ export type HookDictionary = Dictionary<Hook<any>>
 declare export function node
   ( tageName:TagName
   , properties:?PropertyDictionary
-  , children:?Array<VirtualTree>
+  , children:?Array<DOM>
   ):
   VirtualNode

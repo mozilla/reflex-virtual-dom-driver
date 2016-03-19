@@ -6,7 +6,6 @@
   ],
   "plugins": [
     "syntax-flow",
-    "transform-flow-strip-types",
-    "remove-comments"
+    "transform-flow-strip-types"
   ]
 }

@@ -87,9 +87,21 @@ const viewNamed =
   (model, address) =>
   thunk
   ( String(model.name)
-  , Counter.view
-  , model.counter
-  , forward(address, Modify(model.name))
+  , renderNamed
+  , model
+  , address
+  )
+
+const renderNamed =
+  (model, address) =>
+  html.div
+  ( { key: model.name
+    }
+  , [ Counter.view
+      ( model.counter
+      , forward(address, Modify(model.name))
+      )
+    ]
   )
 
 export const view =

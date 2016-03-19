@@ -1,16 +1,14 @@
 [ignore]
-.*/src/test/.*
 .*/dist/.*
-.*/node_modules/reflex/examples/.*
-.*/node_modules/reflex-virtual-dom-driver/lib/.*
-.*/node_modules/reflex/lib/.*
+.*/node_modules/babel.*
+.*/node_modules/tap/.*
+.*/node_modules/reflex-virtual-dom-driver/examlpes/.*
 
 [libs]
-./node_modules/reflex/interfaces/
-./node_modules/reflex-virtual-dom-driver/interfaces/
 
 [include]
 
 [options]
-module.name_mapper='reflex-virtual-dom-driver' -> 'reflex-virtual-dom-driver/src/index'
-module.name_mapper='reflex' -> 'reflex/src/index'
+
+suppress_comment= \\(.\\|\n\\)*\\@FlowIssue
+suppress_comment= \\(.\\|\n\\)*\\@FlowIgnore

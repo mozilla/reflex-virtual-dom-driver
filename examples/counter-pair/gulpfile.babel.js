@@ -35,14 +35,14 @@ class Bundler {
     }
 
     if (options.hotreload != null) {
-      this.transform.push(hotify)
       this.plugin.push(hmr)
+      this.transform.push(hotify)
     }
 
     this.bundler = browserify
     ( { entries: [this.entry]
       , debug:
-        ( options.sourceMaps != null
+        ( options.sourceMaps == null
         ? false
         : options.sourceMaps === false
         ? false
@@ -103,7 +103,7 @@ class Bundler {
         })
       )
 
-    return output.on('end', () => gutil.log(`Completed bundling: '${this.options.input}'`))
+    return output.on('end', () => gutil.log(`Completed bundling: '${this.entry}'`))
   }
 }
 

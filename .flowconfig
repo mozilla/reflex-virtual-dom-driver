@@ -1,15 +1,15 @@
 [ignore]
+.*/dist/.*
+.*/node_modules/babel.*
+.*/node_modules/tap/.*
+.*/node_modules/flow-bin/.*
 .*/examples/.*
-.*/src/test/.*
-.*/node_modules/reflex/examples/.*
-.*/node_modules/reflex/lib/.*
-.*/node_modules/reflex/dist/.*
-.*/reflex-virtual-dom-driver/lib/.*
-.*/reflex-virtual-dom-driver/dist/.*
 
 [libs]
-./node_modules/reflex/interfaces/
 
 [include]
 
 [options]
+
+suppress_comment= \\(.\\|\n\\)*\\@FlowIssue
+suppress_comment= \\(.\\|\n\\)*\\@FlowIgnore

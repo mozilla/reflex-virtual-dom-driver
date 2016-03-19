@@ -1,7 +1,7 @@
 /* @flow */
 
 /*::
-import type {VirtualTree, Key, Address} from "reflex"
+import type {DOM, Key, Address} from "reflex"
 */
 
 const redirect = (addressBook, index) =>
@@ -12,20 +12,20 @@ export class Thunk {
   $type: "Thunk";
   type: "Thunk";
   key: Key;
-  view: (...args:Array<any>) => VirtualTree;
+  view: (...args:Array<any>) => DOM;
   args: Array<any>;
 
   addressBook: ?Array<Address<any>>;
-  value: ?VirtualTree;
+  value: ?DOM;
   */
-  constructor(key/*:Key*/, view/*:(...args:Array<any>) => VirtualTree*/, args/*:Array<any>*/) {
+  constructor(key/*:Key*/, view/*:(...args:Array<any>) => DOM*/, args/*:Array<any>*/) {
     this.key = key
     this.view = view
     this.args = args
     this.addressBook = null
     this.value = null
   }
-  render(previous/*:?VirtualTree*/)/*:VirtualTree*/ {
+  render(previous/*:?DOM*/)/*:DOM*/ {
     if (previous instanceof Thunk && previous.value != null) {
       if (profile) {
         console.time(`${this.key}.receive`)
@@ -128,7 +128,7 @@ let profile = null
 
 export const thunk = /*::<a, b, c, d, e, f, g, h, i, j>*/
   ( key/*:string*/
-  , view/*:(a:a, b:b, c:c, d:d, e:e, f:f, g:g, h:h, i:i, j:j) => VirtualTree*/
+  , view/*:(a:a, b:b, c:c, d:d, e:e, f:f, g:g, h:h, i:i, j:j) => DOM*/
   , ...args/*:Array<any>*/
   )/*:Thunk*/ =>
   new Thunk(key, view, args)
