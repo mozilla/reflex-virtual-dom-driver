@@ -3,14 +3,16 @@
 import {dictionary} from "object-as-dictionary"
 
 /*::
-import * as type from "../../type"
+import type {Dictionary} from "object-as-dictionary"
+import type {Hook} from "../hook"
+import type {EventListener, Target, EventConfig, Address} from "./event-handler"
 */
 
-const nameOverrides/*:type.nameOverrides*/ = dictionary({
+const nameOverrides/*:Dictionary<string>*/ = dictionary({
   DoubleClick: 'dblclick',
 })
 
-export const supportedEvents/*:type.supportedEvents*/ = [
+export const supportedEvents/*:Dictionary<EventConfig>*/ = [
   // Clipboard Events
   'Copy',
   'Cut',
@@ -98,7 +100,7 @@ export const supportedEvents/*:type.supportedEvents*/ = [
 }, dictionary())
 
 
-const handleEvent/*:type.handleEvent*/ = phase => event => {
+const handleEvent = phase => event => {
   const {currentTarget, type} = event
   const handler = currentTarget[`on${type}${phase}`]
 
@@ -111,17 +113,19 @@ const handleEvent/*:type.handleEvent*/ = phase => event => {
   }
 }
 
-const handleCapturing = handleEvent('capture')
-const handleBubbling = handleEvent('bubble')
+// @FlowIssue: #1413
+const handleCapturing/*:EventListener*/ = handleEvent('capture')
+// @FlowIssue: #1413
+const handleBubbling/*:EventListener*/ = handleEvent('bubble')
 
 export class EventHandler {
   /*::
-  handler: type.EventListener;
+  handler: EventListener;
   */
-  constructor(handler/*:type.EventListener*/) {
+  constructor(handler/*:EventListener*/) {
     this.handler = handler
   }
-  hook(node/*:type.EventTarget*/, name/*:string*/, previous/*:any*/) {
+  hook(node/*:Target*/, name/*:string*/, previous/*:any*/) {
     const config = supportedEvents[name]
     if (config != null) {
       const {type, capture} = config
@@ -135,7 +139,7 @@ export class EventHandler {
       node[`on${type}${phase}`] = this.handler
     }
   }
-  unhook(node/*:type.EventTarget*/, name/*:string*/, next/*:any*/) {
+  unhook(node/*:Target*/, name/*:string*/, next/*:any*/) {
     const config = supportedEvents[name]
 
     if (config != null) {
@@ -153,13 +157,15 @@ export class EventHandler {
   }
 }
 
-export const eventHandler/*:type.eventHandler*/ = address => {
-  const handler = address.reflexEventListener
-  if (handler == null) {
-    const handler = new EventHandler(address)
-    address.reflexEventListener = handler
-    return handler
-  } else {
-    return handler
+export const eventHandler = /*::<message>*/
+  (address/*:Address<message>*/)/*:Hook<Target>*/ => {
+    const handler = address.reflexEventListener
+    if (handler == null) {
+      // @FlowIssue: #1413
+      const handler = new EventHandler(address)
+      address.reflexEventListener = handler
+      return handler
+    } else {
+      return handler
+    }
   }
-}

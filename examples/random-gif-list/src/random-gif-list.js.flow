@@ -1,0 +1,41 @@
+/* @flow */
+
+import {Effects} from "reflex"
+import type {Address, DOM} from "reflex"
+import * as RandomGif from "./random-gif"
+
+export type ID = number
+
+type NamedViewer =
+  { name: ID
+  , viewer: RandomGif.Model
+  }
+
+export type Model =
+  { topic: string
+  , nextID: ID
+  , viewers: Array<NamedViewer>
+  }
+
+export type Action
+  = { type: "Create" }
+  | { type: "Topic"
+    , source: string
+    }
+  | { type: "Modify"
+    , source:
+      { name: ID
+      , action: RandomGif.Action
+      }
+    }
+
+declare export function init ():
+  [Model, Effects<Action>]
+
+declare export function update
+  (model:Model, action:Action):
+  [Model, Effects<Action>]
+
+declare export function view
+  (model:Model, address:Address<Action>):
+  DOM

@@ -1,0 +1,20 @@
+/* @flow */
+
+import type {Address, VirtualRoot} from "reflex"
+import {Driver} from "reflex"
+
+type Configuration =
+  { target: Element
+  , timeGroupName?: string
+  }
+
+declare export class Renderer {
+  address: Address<VirtualRoot>;
+  constructor(configuration:Configuration):void;
+
+  render: Driver.render;
+  node: Driver.node;
+  thunk: Driver.thunk;
+  // Note this must be optional in order to satisfy flow (see facebook/flow#952)
+  text: ?Driver.text;
+}

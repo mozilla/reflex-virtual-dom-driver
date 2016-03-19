@@ -4,45 +4,123 @@ import * as CounterList from "./counter-list";
 import * as Counter from "./counter";
 import {html, forward, thunk} from "reflex";
 
-/*:: import * as type from "../type/counter-set" */
+/*::
+import type {ID, Model, Action} from "./counter-set"
+import type {DOM, Address} from "reflex"
+*/
 
-export const create = CounterList.create
+const Add =
+  () =>
+  ( { type: "Add"
+    }
+  )
 
-export const asRemoveBy/*:type.asRemoveBy*/ = id => () =>
-  ({type: "CounterSet.RemoveByID", id})
+const Remove =
+  (name) =>
+  () =>
+  ( { type: "Remove"
+    , source: name
+    }
+  )
 
-export const removeByID/*:type.removeByID*/ = (model, id) => create({
-  nextID: model.nextID,
-  entries: model.entries.filter(entry => entry.id != id)
-})
+const Modify =
+  (name) =>
+  (action) =>
+  ( { type: "Modify"
+    , source: {name, action}
+    }
+  )
 
-export const update/*:type.update*/ = (model, action) =>
-  action.type === "CounterSet.RemoveByID" ?
-    removeByID(model, action.id) :
-    CounterList.update(model, action)
+const remove =
+  (model/*:Model*/, name/*:ID*/)/*:Model*/ =>
+  ( { nextID: model.nextID
+    , counters:
+      model.counters.filter
+      ( named => named.name !== name )
+    }
+  )
 
+const modify =
+  (model, {name, action}) =>
+  ( { nextID: model.nextID
+    , counters:
+      model.counters.map
+      ( named =>
+        ( named.name === name
+        ? { name
+          , counter: Counter.update(named.counter, action)
+          }
+        : named
+        )
+      )
+    }
+  )
 
-const viewEntry/*:type.viewEntry*/ = ({id, model}, address) =>
-  html.div({key: id}, [
-    Counter.view(model, forward(address, CounterList.asBy(id))),
-    html.button({
-      key: "remove",
-      onClick: forward(address, asRemoveBy(id))
-    }, ["x"])
-  ])
+export const init = CounterList.init
 
-export const view/*:type.view*/ = (model, address) =>
-  html.div({key: "CounterList"}, [
-    html.div({key: "controls"}, [
-      html.button({
-        key: "add",
-        onClick: forward(address, CounterList.asAdd)
-      }, ["Add"])
-    ]),
-    html.div({
-      key: "entries"
-    }, model.entries.map(entry => thunk(String(entry.id),
-                                        viewEntry,
-                                        entry,
-                                        address)))
-  ])
+export const update =
+  ( model/*:Model*/, action/*:Action*/)/*:Model*/ =>
+  ( action.type === "Add"
+  ? CounterList.update(model, action)
+  : action.type === "Remove"
+  ? remove(model, action.source)
+  : action.type === "Modify"
+  ? modify(model, action.source)
+  : model
+  )
+
+const viewNamed =
+  (model, address) =>
+  thunk
+  ( String(model.name)
+  , renderNamed
+  , model
+  , address
+  )
+
+const renderNamed =
+  (model, address) =>
+  html.div
+  ( { key: model.name
+    }
+  , [ Counter.view
+      ( model.counter
+      , forward(address, Modify(model.name))
+      )
+    , html.button
+      ( { key: "remove"
+        , onClick: forward(address, Remove(model.name))
+        }
+      , ["x"]
+      )
+    ]
+  )
+
+export const view =
+  ( model/*:Model*/
+  , address/*:Address<Action>*/
+  )/*:DOM*/ =>
+  html.div
+  ( { key: "CounterList"
+    }
+  , [ html.div
+      ( { key: "controls"
+        }
+      , [ html.button
+          ( { key: "add"
+            , onClick: forward(address, Add)
+            }
+          , ["Add"]
+          )
+        ]
+      )
+    , html.div
+      ( { key: "counters"
+        }
+      , model.counters.map
+        ( named =>
+          viewNamed(named, address)
+        )
+      )
+    ]
+  )

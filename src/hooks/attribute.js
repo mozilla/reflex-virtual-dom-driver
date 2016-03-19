@@ -2,10 +2,10 @@
 
 import {dictionary} from "object-as-dictionary"
 /*::
-import * as type from "../../type/index"
+import type {Dictionary} from "object-as-dictionary"
 */
 
-const nameOverrides/*:type.nameOverrides*/ = dictionary({
+const nameOverrides/*:Dictionary<string>*/ = dictionary({
   className: 'class',
   htmlFor: 'for',
   acceptCharset: 'accept-charset',
@@ -36,7 +36,7 @@ const nameOverrides/*:type.nameOverrides*/ = dictionary({
   xmlSpace: 'xml:space'
 })
 
-export const supportedAttributes/*:type.supportedAttributes*/ =
+export const supportedAttributes/*:Dictionary<string>*/ =
  `allowFullScreen allowTransparency capture cellPadding cellSpacing charSet
 challenge classID className cols colSpan contentEditable contextMenu
 dir encType  form formAction formEncType formMethod formTarget frameBorder

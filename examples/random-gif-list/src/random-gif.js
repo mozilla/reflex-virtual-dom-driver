@@ -3,76 +3,139 @@
 import {html, forward, Effects, Task} from "reflex"
 import {fetch} from "./fetch"
 
-/*:: import * as type from "../type/random-gif" */
 
-export const create/*:type.create*/ = ({topic, uri}) =>
-  ({type: "RandomGif.Model", topic, uri})
+/*::
+import type {URI, Model, Action} from "./random-gif"
+import type {Address, DOM, Never} from "reflex"
+*/
 
-export const initialize/*:type.initialize*/ = topic =>
-  [create({topic, uri: "assets/waiting.gif"}), getRandomGif(topic)]
+const RequestMore =
+  () =>
+  ( { type: "RequestMore"
+    }
+  )
 
+const ReceiveNewGif =
+  (uri) =>
+  ( { type: "ReceiveNewGif"
+    , source: uri
+    }
+  )
 
-export const asRequestMore/*:type.asRequestMore*/ = () =>
-  ({type: "RandomGif.RequestMore"})
+export const init =
+  (topic/*:string*/)/*:[Model, Effects<Action>]*/ =>
+  requestMore
+  ( { topic
+    , uri: "assets/waiting.gif"
+    }
+  )
 
-export const asReceiveNewGif/*:type.asReceiveNewGif*/ = uri =>
-  ({type: "RandomGif.ReceiveNewGif", uri})
+const nofx =
+  (model/*:Model*/)/*:[Model, Effects<Action>]*/ =>
+  [ model
+  , Effects.none
+  ]
 
-
-export const step/*:type.step*/ = (model, action) =>
-  action.type === "RandomGif.RequestMore" ?
-    [model, getRandomGif(model.topic)] :
-  action.type === "RandomGif.ReceiveNewGif" ?
-    [
-      create({
-        topic: model.topic,
-        uri: action.uri != null ? action.uri : model.uri
-      }),
-      Effects.none
-    ] :
-    [model, Effects.none]
-
-const makeRandomURI = topic =>
+const makeRandomURI =
+  topic =>
   `http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=${topic}`
 
-const decodeResponseBody = body =>
-  (body != null && body.data != null && body.data.image_url != null) ?
-    String(body.data.image_url) :
-    null
 
-const readResponseAsJSON = response => response.json()
+const decodeResponseBody =
+  body =>
+  ( body == null
+  ? null
+  : ( body.data == null
+    ? null
+    : ( body.data.image_url == null
+      ? null
+      : String(body.data.image_url)
+      )
+    )
+  )
 
-export const getRandomGif/*:type.getRandomGif*/ = topic =>
-  Effects.task(Task.future(() => fetch(makeRandomURI(topic))
-                                  .then(readResponseAsJSON)
-                                  .then(decodeResponseBody)
-                                  .then(asReceiveNewGif)))
 
-const style = {
-  viewer: {
-    width: "200px"
-  },
-  header: {
-    width: "200px",
-    textAlign: "center"
-  },
-  image(uri) {
-    return {
-      display: "inline-block",
-      width: "200px",
-      height: "200px",
-      backgroundPosition: "center center",
-      backgroundSize: "cover",
-      backgroundImage: `url("${uri}")`
+const getRandomGif =
+  (topic) =>
+  Task.future
+  ( () =>
+    fetch(makeRandomURI(topic))
+    .then(response => response.json())
+    .then(decodeResponseBody)
+  )
+
+
+
+const requestMore =
+  model =>
+  [ model
+  , Effects.task(getRandomGif(model.topic))
+    .map(ReceiveNewGif)
+  ]
+
+const receivedNewGif =
+  (model, uri) =>
+  nofx
+  ( { topic: model.topic
+    , uri:
+      ( uri == null
+      ? model.uri
+      : uri
+      )
     }
-  }
-}
+  )
 
-export const view/*:type.view*/ = (model, address) =>
-  html.div({key: "gif-viewer", style: style.viewer}, [
-    html.h2({key: "header", style: style.header}, [model.topic]),
-    html.div({key: "image", style: style.image(model.uri)}),
-    html.button({key: "button", onClick: forward(address, asRequestMore)}, [
-      "More please!"
-    ])
-  ])
+export const update =
+  ( model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  ( action.type === "ReceiveNewGif"
+  ? receivedNewGif(model, action.source)
+  : action.type === "RequestMore"
+  ? requestMore(model)
+  : nofx(model)
+  )
+
+
+const style =
+  { viewer:
+    { width: "200px"
+    }
+  , header:
+    { width: "200px"
+    , textAlign: "center"
+    }
+  , image: (uri) =>
+    ( { display: "inline-block"
+      , width: "200px"
+      , height: "200px"
+      , backgroundPosition: "center center"
+      , backgroundSize: "cover"
+      , backgroundImage: `url("${uri}")`
+      }
+    )
+  }
+
+export const view =
+  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  html.main
+  ( { key: "gif-viewer"
+    , style: style.viewer
+    }
+  , [ html.h2
+      ( { key: "header"
+        , style: style.header
+        }
+      , [ model.topic ]
+      )
+    , html.div
+      ( { key: "image"
+        , style: style.image(model.uri)
+        }
+      )
+    , html.button
+      ( { key: "button"
+        , onClick: forward(address, RequestMore)
+        }
+      , [ "More please!" ]
+      )
+    ]
+  )

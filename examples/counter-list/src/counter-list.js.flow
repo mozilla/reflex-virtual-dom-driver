@@ -1,0 +1,41 @@
+/* @flow */
+
+import type {Address, DOM} from "reflex"
+import * as Counter from "./counter"
+
+export type ID = number
+
+export type NamedCounter =
+  { name: ID
+  , counter: Counter.Model
+  }
+
+export type Model =
+  { nextID: ID
+  , counters: Array<NamedCounter>
+  }
+
+export type Action
+  = { type: "Add" }
+  | { type: "Remove" }
+  | { type: "Modify"
+    , source:
+      { name: ID
+      , action: Counter.Action
+      }
+    }
+
+declare export function Modify
+  ( name:ID
+  , action:Counter.Action
+  ):Action
+
+
+declare export function init (): Model
+declare export function update
+  (model:Model, action:Action):
+  Model
+
+declare export function view
+  (model:Model, address:Address<Action>):
+  DOM

@@ -1,83 +1,178 @@
 /* @flow */
+
 import * as RandomGif from "./random-gif"
-import {find} from "./array-find"
+import * as array from "./array"
 import {html, forward, thunk, Effects} from "reflex"
 
 
-/*:: import * as type from "../type/random-gif-list" */
+/*::
+import type {ID, Action, Model} from "./random-gif-list"
+import type {Address, DOM} from "reflex"
+*/
 
-export const create/*:type.create*/ = ({topic, entries, nextID}) =>
-  ({type: "RandomGifList.Model", topic, entries, nextID})
+const Create =
+  () =>
+  ( { type: "Create"
+    }
+  )
 
-export const initialize/*:type.initialize*/ = () =>
-  [create({topic: "", entries: [], nextID: 0}, Effects.none)]
+const Topic =
+  (subject:string) =>
+  ( { type: "Topic"
+    , source: subject
+    }
+  )
 
-export const asTopic/*:type.asTopic*/ = topic =>
-  ({type: "RandomGifList.Topic", topic})
+const Modify =
+  (name/*:ID*/) =>
+  (action/*:RandomGif.Action*/)/*:Action*/ =>
+  ( { type: "Modify"
+    , source:
+      { name
+      , action
+      }
+    }
+  )
 
-export const asCreate/*:type.asCreate*/ = () =>
-  ({type: "RandomGifList.Create"})
+const nofx =
+  model =>
+  [ model
+  , Effects.none
+  ]
 
-export const asByID/*:type.asByID*/ = id => act =>
-  ({type: "RandomGifList.UpdateByID", id, act})
+export const init =
+  ()/*:[Model, Effects<Action>]*/ =>
+  nofx
+  ( { topic: ""
+    , nextID: 0
+    , viewers: []
+    }
+  )
 
-export const step/*:type.step*/ = (model, action) => {
-  if (action.type === "RandomGifList.Topic") {
-    return [
-      create({
-        topic: action.topic,
-        nextID: model.nextID,
-        entries: model.entries
-      }),
-      Effects.none
-    ]
-  }
 
-  if (action.type === "RandomGifList.Create") {
-    const [gif, fx] = RandomGif.initialize(model.topic)
-    return [
-      create({
-        topic: "",
-        nextID: model.nextID + 1,
-        entries: model.entries.concat([{
-          type: "RandomGifList.Entry",
-          id: model.nextID,
-          model: gif
-        }])
-      }),
-      fx.map(asByID(model.nextID))
-    ]
-  }
 
-  if (action.type === "RandomGifList.UpdateByID") {
-    const {id} = action
-    const {entries, topic, nextID} = model
-    const entry = find(entries, entry => entry.id === id)
-    const index = entry != null ? entries.indexOf(entry) : -1
-    if (index >= 0 && entry != null && entry.model != null && entry.id != null){
-      const [gif, fx] = RandomGif.step(entry.model, action.act)
-      const entries = model.entries.slice(0)
-      entries[index] = {
-        type: "RandomGifList.Entry",
-        id,
-        model: gif
+export const update =
+  (model/*:Model*/, action/*:Action*/)/*:[Model, Effects<Action>]*/ =>
+  ( action.type === "Create"
+  ? createViewer(model)
+  : action.type === "Topic"
+  ? updateTopic(model, action.source)
+  : action.type === "Modify"
+  ? updateNamed(model, action.source)
+  : nofx(model)
+  )
+
+const updateTopic =
+  (model, topic) =>
+  nofx
+  ( { topic
+    , nextID: model.nextID
+    , viewers: model.viewers
+    }
+  )
+
+const createViewer =
+  (model) => {
+    const [viewer, fx] = RandomGif.init(model.topic)
+    const next =
+      { topic: ""
+      , nextID: model.nextID + 1
+      , viewers:
+        [ ...model.viewers
+        , { name: model.nextID
+          , viewer
+          }
+        ]
       }
 
-      return [
-        create({topic, nextID, entries}),
-        fx.map(asByID(id))
+    const result =
+      [ next
+      , fx.map(Modify(model.nextID))
       ]
-    }
+
+    return result
   }
 
-  return [model, Effects.none]
-}
+const updateNamed =
+  (model, {name, action}) => {
+    const named = array.find
+      ( model.viewers
+      , viewer => viewer.name === name
+      )
+
+    if (named != null) {
+      const [viewer, fx] = RandomGif.update
+        ( named.viewer
+        , action
+        )
+
+      const viewers = array.set
+        ( model.viewers.indexOf(named)
+        , { name: named.name
+          , viewer
+          }
+        , model.viewers
+        )
+
+      const next =
+        [ { topic: model.topic
+          , nextID: model.nextID
+          , viewers
+          }
+        , fx.map(Modify(named.name))
+        ]
+
+      return next
+    }
+
+    return nofx(model)
+  }
+
+export const view =
+  (model/*:Model*/, address/*:Address<Action>*/)/*:DOM*/ =>
+  html.main
+  ( { key: "random-gif-list"
+    }
+  , [ html.form
+      ( { onSubmit: forward(address, decodeSubmit)
+        }
+      , [ html.input
+          ( { style: style.input
+            , placeholder: "What kind of gifs do you want?"
+            , value: model.topic
+            , onChange: forward(address, decodeTopicChange)
+            //, onChange: forward(address, event => Topic(event.target.value))
+            // , onKeyUp: event => {
+            //   if (event.keyCode === 13) {
+            //     address(asCreate())
+            //   }
+            }
+          )
+        ]
+      )
+    , html.div
+      ( { key: "random-gifs-list-box"
+        , style: style.container
+        }
+      , model.viewers.map(named => viewNamed(named, address))
+      )
+    ]
+  )
+
+const decodeSubmit =
+  event =>
+  Create(event.preventDefault())
+
+const decodeTopicChange =
+  event =>
+  Topic(event.target.value)
+
 
 const style = {
   input: {
     width: "100%",
     height: "40px",
-    padding: "10px 0",
+    margin: "10px 0",
     fontSize: "2em",
     textAlign: "center"
   },
@@ -87,25 +182,11 @@ const style = {
   }
 }
 
-export const viewEntry/*:type.viewEntry*/ = ({id, model}, address) =>
-  RandomGif.view(model, forward(address, asByID(id)))
-
-export const view/*:type.view*/ = (model, address) =>
-  html.div({key: "random-gif-list"}, [
-    html.input({
-      style: style.input,
-      placeholder: "What kind of gifs do you want?",
-      value: model.topic,
-      onChange: forward(address, event => asTopic(event.target.value)),
-      onKeyUp: event => {
-        if (event.keyCode === 13) {
-          address(asCreate())
-        }
-      }
-    }),
-    html.div({key: "random-gifs-list-box", style: style.container},
-             model.entries.map(entry => thunk(String(entry.id),
-                                              viewEntry,
-                                              entry,
-                                              address)))
-  ])
+const viewNamed =
+  (model, address) =>
+  thunk
+  ( String(model.name)
+  , RandomGif.view
+  , model.viewer
+  , forward(address, Modify(model.name))
+  )
