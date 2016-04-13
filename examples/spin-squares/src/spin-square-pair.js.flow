@@ -1,0 +1,30 @@
+/* @flow */
+
+import type {Float, Time} from "eased"
+import type {Address, DOM} from "reflex"
+import {Effects} from "reflex"
+import * as SpinSquare from "./spin-square"
+
+export type Model =
+  { left: SpinSquare.Model
+  , right: SpinSquare.Model
+  }
+
+export type Action
+  = { type: "Left"
+    , source: SpinSquare.Action
+    }
+  | { type: "Right"
+    , source: SpinSquare.Action
+    }
+
+declare export function init ():
+  [Model, Effects<Action>]
+
+declare export function update
+  (model:Model, action:Action):
+  [Model, Effects<Action>]
+
+declare export function view
+  (model:Model, address:Address<Action>):
+  DOM
