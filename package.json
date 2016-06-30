@@ -1,6 +1,6 @@
 {
   "name": "reflex-virtual-dom-driver",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "virtual-dom based driver for reflex",
   "keywords": [
     "reflex",
