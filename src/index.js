@@ -151,9 +151,10 @@ export class Renderer {
     const end = performance.now()
     const time = end - start
 
-    if (time > 16) {
-      console.warn(`Render took ${time}ms & will cause frame drop`)
-    }
+    // Disabled for now. TODO: make this runtime-configurable.
+    // if (time > 16) {
+    //   console.warn("Render took " + time + "ms & will cause frame drop");
+    // }
 
     if (timeGroupName != null) {
       console.time(`render ${timeGroupName}`)
