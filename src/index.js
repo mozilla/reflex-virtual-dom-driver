@@ -130,7 +130,7 @@ export class Renderer {
     this.text = text
   }
   toString()/*:string*/{
-    return `Renderer({target: ${this.target}})`
+    return `Renderer({target: ${String(this.target)}})`
   }
   receive(value/*:VirtualRoot*/) {
     if (this.value !== value) {

@@ -102,6 +102,7 @@ export const supportedEvents/*:Dictionary<EventConfig>*/ = [
 
 const handleEvent = phase => event => {
   const {currentTarget, type} = event
+  // @FlowIgnore: Flow does not support expand properties on DOM Elements.
   const handler = currentTarget[`on${type}${phase}`]
 
   if (typeof(handler) === 'function') {
@@ -113,10 +114,9 @@ const handleEvent = phase => event => {
   }
 }
 
-// @FlowIssue: #1413
-const handleCapturing/*:EventListener*/ = handleEvent('capture')
-// @FlowIssue: #1413
-const handleBubbling/*:EventListener*/ = handleEvent('bubble')
+
+const handleCapturing = handleEvent('capture')
+const handleBubbling = handleEvent('bubble')
 
 export class EventHandler {
   /*::
