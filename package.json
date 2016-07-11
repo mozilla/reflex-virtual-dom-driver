@@ -8,7 +8,7 @@
     "renderer"
   ],
   "author": "Irakli Gozalishvili <rfobic@gmail.com> (http://jeditoolkit.com)",
-  "homepage": "https://github.com/Gozala/reflex-virtual-dom-driver",
+  "homepage": "https://github.com/mozilla/reflex-virtual-dom-driver",
   "main": "./lib/index.js",
   "dependencies": {
     "blanks": "0.0.2",
@@ -40,11 +40,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Gozala/reflex-virtual-dom-driver.git",
-    "web": "https://github.com/Gozala/reflex-virtual-dom-driver"
+    "url": "https://github.com/mozilla/reflex-virtual-dom-driver.git",
+    "web": "https://github.com/mozilla/reflex-virtual-dom-driver"
   },
   "bugs": {
-    "url": "https://github.com/Gozala/reflex-virtual-dom-driver/issues/"
+    "url": "https://github.com/mozilla/reflex-virtual-dom-driver/issues/"
   },
   "license": "MIT"
 }
