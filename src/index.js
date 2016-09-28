@@ -96,7 +96,6 @@ export class Renderer {
   state: number;
   version: number;
   address: Address<VirtualRoot>;
-  timeGroupName: ?string;
 
   execute: (time:Time) => void;
   render: Driver.render;
@@ -105,7 +104,7 @@ export class Renderer {
   // Note this must be optional in order to satisfy flow (see facebook/flow#952)
   text: ?Driver.text;
   */
-  constructor({target, timeGroupName}/*:{target: Element, timeGroupName?:string}*/) {
+  constructor({target}/*:{target: Element}*/) {
     this.state = NO_REQUEST
     this.target = target
     this.mount =
@@ -118,12 +117,6 @@ export class Renderer {
 
     this.address = this.receive.bind(this)
     this.execute = this.execute.bind(this)
-
-    this.timeGroupName =
-      ( timeGroupName == null
-      ? null
-      : timeGroupName
-      )
 
     this.node = node
     this.thunk = thunk
@@ -138,39 +131,74 @@ export class Renderer {
       animationScheduler.schedule(this.execute)
     }
   }
+  onRender() {}
+  onRendered() {}
+  onDiff() {}
+  onDiffed() {}
+  onPatch() {}
+  onPatched() {}
+  onMount() {}
+  onMounted() {}
   execute(_/*:number*/) {
-    const {timeGroupName} = this
-    if (timeGroupName != null) {
-      console.time(`render ${timeGroupName}`)
-    }
-
-    const start = performance.now()
-
+    this.onRender()
     this.value.renderWith(this)
-
-    const end = performance.now()
-    const time = end - start
-
-    // Disabled for now. TODO: make this runtime-configurable.
-    // if (time > 16) {
-    //   console.warn("Render took " + time + "ms & will cause frame drop");
-    // }
-
-    if (timeGroupName != null) {
-      console.time(`render ${timeGroupName}`)
-    }
+    this.onRendered()
   }
   render(tree/*:VirtualTree*/) {
     const {mount, target} = this
     if (mount) {
-      patch(mount, diff(mount.reflexTree, tree))
+      this.onDiff()
+      const delta = diff(mount.reflexTree, tree)
+      this.onDiffed()
+      this.onPatch()
+      patch(mount, delta)
       mount.reflexTree = tree
+      this.onPatched()
     } else {
+      this.onMount()
       const mount = createElement(tree)
       mount.reflexTree = tree
       target.innerHTML = ""
       this.mount = mount
       target.appendChild(mount)
+      this.onMounted()
     }
+  }
+}
+
+export class Profiler extends Renderer {
+  /*::
+  log: Array<[string, number]>
+  */
+  constructor(options/*:{target: Element}*/) {
+    super(options)
+    this.log = []
+  }
+  onRender() {
+    this.log.push(['begin render', performance.now()])
+  }
+  onRendered() {
+    this.log.push(['end render', performance.now()])
+  }
+  onDiff() {
+    this.log.push(['begin diff', performance.now()])
+  }
+  onDiffed() {
+    this.log.push(['end diff', performance.now()])
+  }
+  onPatch() {
+    this.log.push(['begin patch', performance.now()])
+  }
+  onPatched() {
+    this.log.push(['end patch', performance.now()])
+  }
+  onMount() {
+    this.log.push(['begin mount', performance.now()])
+  }
+  onMounted() {
+    this.log.push(['end mount', performance.now()])
+  }
+  clearLog() {
+    this.log.splice(0)
   }
 }

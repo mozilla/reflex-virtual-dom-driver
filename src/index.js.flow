@@ -18,3 +18,8 @@ declare export class Renderer {
   // Note this must be optional in order to satisfy flow (see facebook/flow#952)
   text: ?Driver.text;
 }
+
+declare export class Profiler extends Renderer {
+  log: Array<[string, number]>;
+  clearLog():void;
+}
