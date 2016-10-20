@@ -18,11 +18,11 @@ const app = start({
 app.view.subscribe(new Renderer({target: document.body}))
 ```
 
-[reflex]:https://github.com/Gozala/reflex
+[reflex]:https://github.com/mozilla/reflex
 [virtual-dom]:https://github.com/Matt-Esch/virtual-dom
 
 [npm-url]: https://npmjs.org/package/reflex-virtual-dom-driver
 [npm-image]: https://img.shields.io/npm/v/reflex-virtual-dom-driver.svg?style=flat
 
-[travis-url]: https://travis-ci.org/Gozala/reflex-virtual-dom-driver
-[travis-image]: https://img.shields.io/travis/Gozala/reflex-virtual-dom-driver.svg?style=flat
+[travis-url]: https://travis-ci.org/mozilla/reflex-virtual-dom-driver
+[travis-image]: https://img.shields.io/travis/mozilla/reflex-virtual-dom-driver.svg?style=flat
