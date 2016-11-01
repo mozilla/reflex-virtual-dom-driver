@@ -7,6 +7,7 @@
   "plugins": [
     "syntax-flow",
     "transform-flow-strip-types",
-    "remove-comments"
+    "remove-comments",
+    "transform-class-properties"
   ]
 }

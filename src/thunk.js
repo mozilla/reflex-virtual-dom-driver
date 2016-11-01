@@ -17,6 +17,11 @@ export class Thunk {
 
   addressBook: ?Array<Address<any>>;
   value: ?DOM;
+
+  onCompare: (thunk:Thunk) => void;
+  onCompared: (thunk:Thunk) => void;
+  onCompute: (thunk:Thunk) => void;
+  onComputed: (thunk:Thunk) => void;
   */
   constructor(key/*:Key*/, view/*:(...args:Array<any>) => DOM*/, args/*:Array<any>*/) {
     this.key = key
@@ -26,10 +31,9 @@ export class Thunk {
     this.value = null
   }
   render(previous/*:?DOM*/)/*:DOM*/ {
+    this.onCompare(this)
+
     if (previous instanceof Thunk && previous.value != null) {
-      if (profile) {
-        console.time(`${this.key}.receive`)
-      }
 
       const {view, args: passed, key} = this
       const {args, addressBook, value} = previous
@@ -74,25 +78,22 @@ export class Thunk {
         index = index + 1
       }
 
-      if (profile) {
-        console.timeEnd(`${key}.receive`)
-      }
+      this.onCompared(this)
 
       if (isUpdated) {
-        if (profile) {
-          console.time(`${key}.render`)
-        }
+        this.onCompute(this)
 
         this.value = view(...args)
+        const value = this.value
 
-        if (profile) {
-          console.timeEnd(`${key}.render`)
-        }
+        this.onComputed(this)
+
+        return value
+      } else {
+        return value
       }
     } else {
-      if (profile) {
-        console.time(`${this.key}.render`)
-      }
+      this.onCompared(this)
 
       const addressBook = []
       const {args, view, key} = this
@@ -111,15 +112,19 @@ export class Thunk {
       }
 
       this.addressBook = addressBook
+
+      this.onCompute(this)
       this.value = view(...args)
-
-      if (profile) {
-        console.timeEnd(`${key}.render`)
-      }
+      const value = this.value
+      this.onComputed(this)
+      return value
     }
-
-    return this.value
   }
+  // Profiler
+  onCompare(thunk/*:Thunk*/) {}
+  onCompared(thunk/*:Thunk*/) {}
+  onCompute(thunk/*:Thunk*/) {}
+  onComputed(thunk/*:Thunk*/) {}
 }
 Thunk.prototype.type = "Thunk"
 Thunk.prototype.$type = "Thunk"
