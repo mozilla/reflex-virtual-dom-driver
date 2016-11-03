@@ -17,4 +17,18 @@ declare export class Renderer {
   thunk: Driver.thunk;
   // Note this must be optional in order to satisfy flow (see facebook/flow#952)
   text: ?Driver.text;
+
+  onRender: (renderer:Renderer) => void;
+  onRendered: (renderer:Renderer) => void;
+  onDiff: (renderer:Renderer) => void;
+  onDiffed: (renderer:Renderer) => void;
+  onPatch: (renderer:Renderer) => void;
+  onPatched: (renderer:Renderer) => void;
+  onMount: (renderer:Renderer) => void;
+  onMounted: (renderer:Renderer) => void;
+}
+
+declare export class Profiler extends Renderer {
+  log: Array<[string, number]>;
+  clearLog():void;
 }

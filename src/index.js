@@ -31,16 +31,28 @@ class AnimationScheduler {
   state: State;
   requests: Array<(time:Time) => any>;
   execute: (time:Time) => void;
+  requestTime: Time;
+  request: (callback:(time:number) => void) => number
+  cancel: (id:number) => void
   */
   constructor() {
     this.state = NO_REQUEST
     this.requests = []
     this.execute = this.execute.bind(this)
+    this.requestTime = 0
+  }
+  cancel(id) {
+    return clearTimeout(id)
+  }
+  request(callback) {
+    const now = Date.now()
+    const delta = Math.max(0, 16 - now - this.requestTime)
+    return setTimeout(callback, delta, now + delta)
   }
   schedule(request) {
     if (this.requests.indexOf(request) === -1) {
       if (this.state === NO_REQUEST) {
-        window.requestAnimationFrame(this.execute)
+        this.request(this.execute)
       }
 
       this.requests.push(request)
@@ -59,7 +71,7 @@ class AnimationScheduler {
         // needed, but we make an extra frame request just in
         // case. It's possible to drop a frame if frame is requested
         // too late, so we just do it preemptively.
-        window.requestAnimationFrame(this.execute)
+        this.request(this.execute)
         this.state = EXTRA_REQUEST
         this.dispatch(this.requests.splice(0), 0, time)
         break
@@ -86,6 +98,17 @@ class AnimationScheduler {
     }
   }
 }
+
+if (typeof(window) != "undefined") {
+  if (window.requestAnimationFrame != null) {
+    AnimationScheduler.prototype.request = window.requestAnimationFrame
+  }
+
+  if (window.cancelAnimationFrame != null) {
+    AnimationScheduler.prototype.cancel = window.cancelAnimationFrame
+  }
+}
+
 const animationScheduler = new AnimationScheduler()
 
 export class Renderer {
@@ -96,7 +119,16 @@ export class Renderer {
   state: number;
   version: number;
   address: Address<VirtualRoot>;
-  timeGroupName: ?string;
+  options: {document:Document};
+
+  onRender: (renderer:Renderer) => void;
+  onRendered: (renderer:Renderer) => void;
+  onDiff: (renderer:Renderer) => void;
+  onDiffed: (renderer:Renderer) => void;
+  onPatch: (renderer:Renderer) => void;
+  onPatched: (renderer:Renderer) => void;
+  onMount: (renderer:Renderer) => void;
+  onMounted: (renderer:Renderer) => void;
 
   execute: (time:Time) => void;
   render: Driver.render;
@@ -105,7 +137,7 @@ export class Renderer {
   // Note this must be optional in order to satisfy flow (see facebook/flow#952)
   text: ?Driver.text;
   */
-  constructor({target, timeGroupName}/*:{target: Element, timeGroupName?:string}*/) {
+  constructor({target}/*:{target: Element}*/) {
     this.state = NO_REQUEST
     this.target = target
     this.mount =
@@ -119,15 +151,10 @@ export class Renderer {
     this.address = this.receive.bind(this)
     this.execute = this.execute.bind(this)
 
-    this.timeGroupName =
-      ( timeGroupName == null
-      ? null
-      : timeGroupName
-      )
-
     this.node = node
     this.thunk = thunk
     this.text = text
+    this.options = { document: target.ownerDocument }
   }
   toString()/*:string*/{
     return `Renderer({target: ${String(this.target)}})`
@@ -138,39 +165,37 @@ export class Renderer {
       animationScheduler.schedule(this.execute)
     }
   }
+  onRender() {}
+  onRendered() {}
+  onDiff() {}
+  onDiffed() {}
+  onPatch() {}
+  onPatched() {}
+  onMount() {}
+  onMounted() {}
   execute(_/*:number*/) {
-    const {timeGroupName} = this
-    if (timeGroupName != null) {
-      console.time(`render ${timeGroupName}`)
-    }
-
-    const start = performance.now()
-
+    this.onRender(this)
     this.value.renderWith(this)
-
-    const end = performance.now()
-    const time = end - start
-
-    // Disabled for now. TODO: make this runtime-configurable.
-    // if (time > 16) {
-    //   console.warn("Render took " + time + "ms & will cause frame drop");
-    // }
-
-    if (timeGroupName != null) {
-      console.time(`render ${timeGroupName}`)
-    }
+    this.onRendered(this)
   }
   render(tree/*:VirtualTree*/) {
     const {mount, target} = this
     if (mount) {
-      patch(mount, diff(mount.reflexTree, tree))
+      this.onDiff(this)
+      const delta = diff(mount.reflexTree, tree)
+      this.onDiffed(this)
+      this.onPatch(this)
+      patch(mount, delta)
       mount.reflexTree = tree
+      this.onPatched(this)
     } else {
-      const mount = createElement(tree)
+      this.onMount(this)
+      const mount = createElement(tree, this.options)
       mount.reflexTree = tree
       target.innerHTML = ""
       this.mount = mount
       target.appendChild(mount)
+      this.onMounted(this)
     }
   }
 }
