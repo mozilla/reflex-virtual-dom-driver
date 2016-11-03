@@ -31,7 +31,6 @@ class AnimationScheduler {
   state: State;
   requests: Array<(time:Time) => any>;
   execute: (time:Time) => void;
-  requestTime: Time;
   request: (callback:(time:number) => void) => number
   cancel: (id:number) => void
   */
@@ -39,20 +38,11 @@ class AnimationScheduler {
     this.state = NO_REQUEST
     this.requests = []
     this.execute = this.execute.bind(this)
-    this.requestTime = 0
-  }
-  cancel(id) {
-    return clearTimeout(id)
-  }
-  request(callback) {
-    const now = Date.now()
-    const delta = Math.max(0, 16 - now - this.requestTime)
-    return setTimeout(callback, delta, now + delta)
   }
   schedule(request) {
     if (this.requests.indexOf(request) === -1) {
       if (this.state === NO_REQUEST) {
-        this.request(this.execute)
+        requestAnimationFrame(this.execute)
       }
 
       this.requests.push(request)
@@ -71,7 +61,7 @@ class AnimationScheduler {
         // needed, but we make an extra frame request just in
         // case. It's possible to drop a frame if frame is requested
         // too late, so we just do it preemptively.
-        this.request(this.execute)
+        requestAnimationFrame(this.execute)
         this.state = EXTRA_REQUEST
         this.dispatch(this.requests.splice(0), 0, time)
         break
@@ -99,15 +89,23 @@ class AnimationScheduler {
   }
 }
 
-if (typeof(window) != "undefined") {
-  if (window.requestAnimationFrame != null) {
-    AnimationScheduler.prototype.request = window.requestAnimationFrame
-  }
+let requestAnimationFrameTime = 0
 
-  if (window.cancelAnimationFrame != null) {
-    AnimationScheduler.prototype.cancel = window.cancelAnimationFrame
-  }
-}
+const requestAnimationFrame =
+  (typeof(window) != "undefined" && window.requestAnimationFrame != null) ?
+    window.requestAnimationFrame
+  : callback => {
+      const now = Date.now()
+      const delta = Math.max(0, 16 - (now - requestAnimationFrameTime))
+      requestAnimationFrameTime = now + delta
+      return setTimeout(callback, delta, requestAnimationFrameTime)
+    }
+
+const cancelAnimationFrame =
+  (typeof(window) != "undefined" && window.cancelAnimationFrame != null) ?
+    window.cancelAnimationFrame
+  : clearTimeout
+
 
 const animationScheduler = new AnimationScheduler()
 
