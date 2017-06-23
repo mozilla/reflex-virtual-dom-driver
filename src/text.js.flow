@@ -1,9 +1,0 @@
-/* @flow */
-
-import type {Text, VirtualText} from "reflex"
-
-export {Text, VirtualText} from "reflex"
-
-declare export function text
-  (content:string):
-  VirtualText

@@ -2,4 +2,5 @@
 ~*
 !dist
 !lib
-examples
+!**/*.js
+!**/*.flow

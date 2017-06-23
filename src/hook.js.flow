@@ -1,6 +1,0 @@
-/* @flow */
-
-export type Hook <target> = {
-  hook: (node:target, name:string, previous:any) => void,
-  unhook: (node:target, name:string, next:any) => void
-}

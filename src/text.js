@@ -1,28 +1,17 @@
 /* @flow */
 
 import version from "virtual-dom/vnode/version"
+import { VirtualText } from "reflex"
 
-/*::
-import type {Text} from "./text"
-*/
+export class TextNode implements VirtualText {
+  $type: "VirtualText" = "VirtualText"
+  type: "VirtualText" = "VirtualText"
+  version: string = version
+  text: string
 
-export class VirtualText {
-  /*::
-  $type: "VirtualText";
-  type: "VirtualText";
-  version: string;
-  text: Text;
-  */
-
-  constructor(text/*:Text*/) {
+  constructor(text: string) {
     this.text = text
   }
 }
 
-VirtualText.prototype.$type = "VirtualText"
-VirtualText.prototype.type = "VirtualText"
-VirtualText.prototype.version = version
-
-export const text =
-  (text/*:string*/)/*:VirtualText*/ =>
-  new VirtualText(text)
+export const text = (text: string): TextNode => new TextNode(text)

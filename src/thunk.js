@@ -1,50 +1,47 @@
 /* @flow */
 
-/*::
-import type {DOM, Key, Address} from "reflex"
-*/
+import type { DOM, Address, Thunk } from "reflex"
 
-const redirect = (addressBook, index) =>
-  action => addressBook[index](action);
+const redirect = (addressBook, index) => action => addressBook[index](action)
 
-export class Thunk {
-  /*::
-  $type: "Thunk";
-  type: "Thunk";
-  key: Key;
-  view: (...args:Array<any>) => DOM;
-  args: Array<any>;
+export class ThunkNode implements Thunk {
+  $type: "Thunk" = "Thunk"
+  type: "Thunk" = "Thunk"
+  key: string
+  view: (...args: Array<*>) => DOM
+  args: Array<*>
 
-  addressBook: ?Array<Address<any>>;
-  value: ?DOM;
+  addressBook: ?Array<Address<mixed>>
+  value: ?DOM
 
-  onCompare: (thunk:Thunk) => void;
-  onCompared: (thunk:Thunk) => void;
-  onCompute: (thunk:Thunk) => void;
-  onComputed: (thunk:Thunk) => void;
-  */
-  constructor(key/*:Key*/, view/*:(...args:Array<any>) => DOM*/, args/*:Array<any>*/) {
+  constructor(
+    key: string,
+    view: (...args: Array<*>) => DOM,
+    ...args: Array<*>
+  ) {
     this.key = key
     this.view = view
     this.args = args
     this.addressBook = null
     this.value = null
   }
-  render(previous/*:?DOM*/)/*:DOM*/ {
+  render(previous: ?DOM): DOM {
     this.onCompare(this)
 
-    if (previous instanceof Thunk && previous.value != null) {
-
-      const {view, args: passed, key} = this
-      const {args, addressBook, value} = previous
+    if (
+      previous instanceof ThunkNode &&
+      previous.value != null &&
+      previous.addressBook != null
+    ) {
+      const { view, args: passed, key } = this
+      const { args, value, addressBook } = previous
       this.addressBook = addressBook
       this.args = args
       this.value = value
 
       const count = passed.length
       let index = 0
-      let isUpdated = view !== previous.view
-                    || key !== previous.key
+      let isUpdated = view !== previous.view || key !== previous.key
 
       if (args.length !== count) {
         isUpdated = true
@@ -57,8 +54,8 @@ export class Thunk {
         const arg = args[index]
 
         if (next !== arg) {
-          const isNextAddress = typeof(next) === 'function'
-          const isCurrentAddress = typeof(arg) === 'function'
+          const isNextAddress = typeof next === "function"
+          const isCurrentAddress = typeof arg === "function"
 
           if (isNextAddress && isCurrentAddress) {
             // Update adrress book with a new address.
@@ -96,19 +93,19 @@ export class Thunk {
       this.onCompared(this)
 
       const addressBook = []
-      const {args, view, key} = this
+      const { args, view, key } = this
       const count = args.length
 
       let index = 0
       while (index < count) {
-       const arg = args[index]
-       if (typeof(arg) === 'function') {
-         addressBook[index] = arg
-         args[index] = redirect(addressBook, index)
-       } else {
-         args[index] = arg
-       }
-       index = index + 1
+        const arg = args[index]
+        if (typeof arg === "function") {
+          addressBook[index] = arg
+          args[index] = redirect(addressBook, index)
+        } else {
+          args[index] = arg
+        }
+        index = index + 1
       }
 
       this.addressBook = addressBook
@@ -121,19 +118,41 @@ export class Thunk {
     }
   }
   // Profiler
-  onCompare(thunk/*:Thunk*/) {}
-  onCompared(thunk/*:Thunk*/) {}
-  onCompute(thunk/*:Thunk*/) {}
-  onComputed(thunk/*:Thunk*/) {}
+  onCompare: (thunk: Thunk) => void
+  onCompared: (thunk: Thunk) => void
+  onCompute: (thunk: Thunk) => void
+  onComputed: (thunk: Thunk) => void
+
+  onCompare(thunk: Thunk): void {}
+  onCompared(thunk: Thunk): void {}
+  onCompute(thunk: Thunk): void {}
+  onComputed(thunk: Thunk): void {}
 }
-Thunk.prototype.type = "Thunk"
-Thunk.prototype.$type = "Thunk"
 
 let profile = null
 
-export const thunk = /*::<a, b, c, d, e, f, g, h, i, j>*/
-  ( key/*:string*/
-  , view/*:(a:a, b:b, c:c, d:d, e:e, f:f, g:g, h:h, i:i, j:j) => DOM*/
-  , ...args/*:Array<any>*/
-  )/*:Thunk*/ =>
-  new Thunk(key, view, args)
+export const thunk = <a, b, c, d, e, f, g, h, i, j>(
+  key: string,
+  view: (
+    a0: a,
+    a1: b,
+    a2: c,
+    a3: d,
+    a4: e,
+    a5: f,
+    a6: g,
+    a7: h,
+    a8: i,
+    a9: j
+  ) => DOM,
+  a0: a,
+  a1: b,
+  a2: c,
+  a3: d,
+  a4: e,
+  a5: f,
+  a6: g,
+  a7: h,
+  a8: i,
+  a9: j
+): ThunkNode => new ThunkNode(key, view, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)

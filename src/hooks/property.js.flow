@@ -1,5 +1,0 @@
-/* @flow */
-
-import type {Dictionary} from "object-as-dictionary"
-
-declare export var supportedProperties:Dictionary<string>

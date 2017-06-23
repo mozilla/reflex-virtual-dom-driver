@@ -1,6 +1,0 @@
-/* @flow */
-
-import type {Dictionary} from "object-as-dictionary"
-
-declare export var nameOverrides:Dictionary<string>
-declare export var supportedAttributes:Dictionary<string>

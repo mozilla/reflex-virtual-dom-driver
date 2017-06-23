@@ -3,15 +3,12 @@
 import diff from "virtual-dom/diff"
 import createElement from "virtual-dom/create-element"
 import patch from "virtual-dom/patch"
-import {text} from "./text"
-import {node} from "./node"
-import {thunk} from "./thunk"
+import { text } from "./text"
+import { node } from "./node"
+import { thunk } from "./thunk"
 
-/*::
-import type {Address, VirtualTree, VirtualRoot} from "reflex"
-import {Driver} from "reflex"
-import {performance} from "./performance"
-*/
+import type { Address, VirtualTree } from "reflex"
+import { Driver, VirtualRoot } from "reflex"
 
 // Invariants:
 // 1. In the NO_REQUEST state, there is never a scheduled animation frame.
@@ -21,19 +18,15 @@ const NO_REQUEST = 0
 const PENDING_REQUEST = 1
 const EXTRA_REQUEST = 2
 
-
-/*::
 type Time = number
 type State = 0 | 1 | 2
-*/
+
 class AnimationScheduler {
-  /*::
-  state: State;
-  requests: Array<(time:Time) => any>;
-  execute: (time:Time) => void;
-  request: (callback:(time:number) => void) => number
-  cancel: (id:number) => void
-  */
+  state: State
+  requests: Array<(time: Time) => mixed>
+  execute: (time: Time) => void
+  request: (callback: (time: number) => void) => number
+  cancel: (id: number) => void
   constructor() {
     this.state = NO_REQUEST
     this.requests = []
@@ -49,7 +42,7 @@ class AnimationScheduler {
       this.state = PENDING_REQUEST
     }
   }
-  execute(time/*:Time*/)/*:void*/ {
+  execute(time: Time): void {
     switch (this.state) {
       case NO_REQUEST:
         // This state should not be possible. How can there be no
@@ -91,9 +84,9 @@ class AnimationScheduler {
 
 let requestAnimationFrameTime = 0
 
-const requestAnimationFrame =
-  (typeof(window) != "undefined" && window.requestAnimationFrame != null) ?
-    window.requestAnimationFrame
+const requestAnimationFrame = typeof window != "undefined" &&
+  window.requestAnimationFrame != null
+  ? window.requestAnimationFrame
   : callback => {
       const now = Date.now()
       const delta = Math.max(0, 16 - (now - requestAnimationFrameTime))
@@ -101,83 +94,57 @@ const requestAnimationFrame =
       return setTimeout(callback, delta, requestAnimationFrameTime)
     }
 
-const cancelAnimationFrame =
-  (typeof(window) != "undefined" && window.cancelAnimationFrame != null) ?
-    window.cancelAnimationFrame
+const cancelAnimationFrame = typeof window != "undefined" &&
+  window.cancelAnimationFrame != null
+  ? window.cancelAnimationFrame
   : clearTimeout
-
 
 const animationScheduler = new AnimationScheduler()
 
-export class Renderer {
-  /*::
-  target: Element;
-  mount: ?(Element & {reflexTree?: VirtualTree});
-  value: VirtualRoot;
-  state: number;
-  version: number;
-  address: Address<VirtualRoot>;
-  options: {document:Document};
+export interface Configuration {
+  target: Element,
+  timeGroupName?: string
+}
 
-  onRender: (renderer:Renderer) => void;
-  onRendered: (renderer:Renderer) => void;
-  onDiff: (renderer:Renderer) => void;
-  onDiffed: (renderer:Renderer) => void;
-  onPatch: (renderer:Renderer) => void;
-  onPatched: (renderer:Renderer) => void;
-  onMount: (renderer:Renderer) => void;
-  onMounted: (renderer:Renderer) => void;
+export class Renderer implements Driver {
+  target: Element
+  mount: ?(Element & { reflexTree?: VirtualTree })
+  value: VirtualRoot
+  state: number
+  address: Address<VirtualRoot>
+  options: { document: Document }
 
-  execute: (time:Time) => void;
-  render: Driver.render;
-  node: Driver.node;
-  thunk: Driver.thunk;
-  // Note this must be optional in order to satisfy flow (see facebook/flow#952)
-  text: ?Driver.text;
-  */
-  constructor({target}/*:{target: Element}*/) {
+  execute: (time: Time) => void
+  node = node
+  thunk = thunk
+  text = text
+  constructor({ target }: Configuration) {
     this.state = NO_REQUEST
     this.target = target
-    this.mount =
-      ( target.children.length !== 1
+    this.mount = target.children.length !== 1
       ? null
-      : target.children[0].reflexTree == null
-      ? null
-      : target.children[0]
-      )
+      : target.children[0].reflexTree == null ? null : target.children[0]
 
-    this.address = this.receive.bind(this)
     this.execute = this.execute.bind(this)
 
-    this.node = node
-    this.thunk = thunk
-    this.text = text
     this.options = { document: target.ownerDocument }
   }
-  toString()/*:string*/{
+  toString(): string {
     return `Renderer({target: ${String(this.target)}})`
   }
-  receive(value/*:VirtualRoot*/) {
+  render(value: VirtualRoot) {
     if (this.value !== value) {
       this.value = value
       animationScheduler.schedule(this.execute)
     }
   }
-  onRender() {}
-  onRendered() {}
-  onDiff() {}
-  onDiffed() {}
-  onPatch() {}
-  onPatched() {}
-  onMount() {}
-  onMounted() {}
-  execute(_/*:number*/) {
+  execute(_: number) {
     this.onRender(this)
-    this.value.renderWith(this)
+    this.draw(this.value.renderWith(this))
     this.onRendered(this)
   }
-  render(tree/*:VirtualTree*/) {
-    const {mount, target} = this
+  draw(tree: VirtualTree) {
+    const { mount, target } = this
     if (mount) {
       this.onDiff(this)
       const delta = diff(mount.reflexTree, tree)
@@ -196,4 +163,28 @@ export class Renderer {
       this.onMounted(this)
     }
   }
+  // Profiler
+
+  onRender: (renderer: Renderer) => void
+  onRendered: (renderer: Renderer) => void
+  onDiff: (renderer: Renderer) => void
+  onDiffed: (renderer: Renderer) => void
+  onPatch: (renderer: Renderer) => void
+  onPatched: (renderer: Renderer) => void
+  onMount: (renderer: Renderer) => void
+  onMounted: (renderer: Renderer) => void
+
+  onRender(renderer: Renderer): void {}
+  onRendered(renderer: Renderer): void {}
+  onDiff(renderer: Renderer): void {}
+  onDiffed(renderer: Renderer): void {}
+  onPatch(renderer: Renderer): void {}
+  onPatched(renderer: Renderer): void {}
+  onMount(renderer: Renderer): void {}
+  onMounted(renderer: Renderer): void {}
+}
+
+export class Profiler extends Renderer {
+  log: Array<[string, number]>
+  clearLog(): void {}
 }

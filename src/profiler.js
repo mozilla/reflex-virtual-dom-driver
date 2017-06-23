@@ -1,16 +1,12 @@
 /* @flow */
 
-import {Thunk} from "./thunk"
-import {Renderer} from "./index"
-
-/*::
-import {performance} from "./performance"
-*/
+import { ThunkNode } from "./thunk"
+import { Renderer } from "./index"
 
 class Measurements {
-  timeline: Array<number>;
-  events: Array<string>;
-  constructor(timeline:Array<number>, events:Array<string>) {
+  timeline: Array<number>
+  events: Array<string>
+  constructor(timeline: Array<number>, events: Array<string>) {
     this.timeline = timeline
     this.events = events
   }
@@ -26,44 +22,42 @@ const defaults = {
   onMount: Renderer.prototype.onMount,
   onMounted: Renderer.prototype.onMounted,
 
-  onCompare: Thunk.prototype.onCompare,
-  onCompared: Thunk.prototype.onCompared,
-  onCompute: Thunk.prototype.onCompute,
-  onComputed: Thunk.prototype.onComputed
+  onCompare: ThunkNode.prototype.onCompare,
+  onCompared: ThunkNode.prototype.onCompared,
+  onCompute: ThunkNode.prototype.onCompute,
+  onComputed: ThunkNode.prototype.onComputed
 }
 
-const log =
-  (event, mesurements) => {
-    mesurements.timeline.push(performance.now())
-    mesurements.events.push(event)
-  }
-
+const log = (event, mesurements) => {
+  mesurements.timeline.push(performance.now())
+  mesurements.events.push(event)
+}
 
 const profiler = {
   mesurements: new Measurements([], []),
   onRender(renderer) {
-    log('render', profiler.mesurements)
+    log("render", profiler.mesurements)
   },
   onRendered(renderer) {
-    log('rendered', profiler.mesurements)
+    log("rendered", profiler.mesurements)
   },
   onDiff(renderer) {
-    log('diff', profiler.mesurements)
+    log("diff", profiler.mesurements)
   },
   onDiffed(renderer) {
-    log('diffed', profiler.mesurements)
+    log("diffed", profiler.mesurements)
   },
   onPatch(renderer) {
-    log('patch', profiler.mesurements)
+    log("patch", profiler.mesurements)
   },
   onPatched(renderer) {
-    log('patched', profiler.mesurements)
+    log("patched", profiler.mesurements)
   },
   onMount(renderer) {
-    log('mount', profiler.mesurements)
+    log("mount", profiler.mesurements)
   },
   onMounted(renderer) {
-    log('mounted', profiler.mesurements)
+    log("mounted", profiler.mesurements)
   },
   onCompare(thunk) {
     log(`compare:${thunk.key}`, profiler.mesurements)
@@ -91,10 +85,10 @@ export const start = () => {
   Renderer.prototype.onMount = profiler.onMount
   Renderer.prototype.onMounted = profiler.onMounted
 
-  Thunk.prototype.onCompare = profiler.onCompare
-  Thunk.prototype.onCompared = profiler.onCompared
-  Thunk.prototype.onCompute = profiler.onCompute
-  Thunk.prototype.onComputed = profiler.onComputed
+  ThunkNode.prototype.onCompare = profiler.onCompare
+  ThunkNode.prototype.onCompared = profiler.onCompared
+  ThunkNode.prototype.onCompute = profiler.onCompute
+  ThunkNode.prototype.onComputed = profiler.onComputed
 }
 
 export const stop = () => {
@@ -107,21 +101,18 @@ export const stop = () => {
   Renderer.prototype.onMount = defaults.onMount
   Renderer.prototype.onMounted = defaults.onMounted
 
-  Thunk.prototype.onCompare = defaults.onCompare
-  Thunk.prototype.onCompared = defaults.onCompared
-  Thunk.prototype.onCompute = defaults.onCompute
-  Thunk.prototype.onComputed = defaults.onComputed
+  ThunkNode.prototype.onCompare = defaults.onCompare
+  ThunkNode.prototype.onCompared = defaults.onCompared
+  ThunkNode.prototype.onCompute = defaults.onCompute
+  ThunkNode.prototype.onComputed = defaults.onComputed
 }
 
-
-export const getLastMeasurements =
-  () =>
-  profiler.mesurements
+export const getLastMeasurements = () => profiler.mesurements
 
 class Report {
-  result: {[key:string]: number};
-  pending: Array<string>;
-  timestamps: Array<number>;
+  result: { [key: string]: number }
+  pending: Array<string>
+  timestamps: Array<number>
   constructor(result, pending, timestamps) {
     this.result = result
     this.pending = pending
@@ -149,28 +140,27 @@ class Report {
   }
 }
 
-export const printInclusive =
-  ({timeline, events}:Measurements) => {
-    const report = new Report({}, [], [])
-    let index = 0
-    while (index < timeline.length && index < events.length) {
-      const [time, event] = [timeline[0], events[0]]
-      if (event.startsWith("compare:")) {
-        const key = event.replace("compare:", "")
-        report.start(key, time)
-      } else if (event.startsWith("compared:")) {
-        const key = event.replace("compared:", "")
-        report.end(key, time)
-      } else if (event.startsWith("compute:")) {
-        const key = event.replace("compute:", "")
-        report.start(key, time)
-      } else if (event.startsWith("computed:")) {
-        const key = event.replace("compared:", "")
-        report.end(key, time)
-      } else {
-        continue
-      }
+export const printInclusive = ({ timeline, events }: Measurements) => {
+  const report = new Report({}, [], [])
+  let index = 0
+  while (index < timeline.length && index < events.length) {
+    const [time, event] = [timeline[0], events[0]]
+    if (event.startsWith("compare:")) {
+      const key = event.replace("compare:", "")
+      report.start(key, time)
+    } else if (event.startsWith("compared:")) {
+      const key = event.replace("compared:", "")
+      report.end(key, time)
+    } else if (event.startsWith("compute:")) {
+      const key = event.replace("compute:", "")
+      report.start(key, time)
+    } else if (event.startsWith("computed:")) {
+      const key = event.replace("compared:", "")
+      report.end(key, time)
+    } else {
+      continue
     }
-
-    console.table(report.result)
   }
+
+  console.table(report.result)
+}
