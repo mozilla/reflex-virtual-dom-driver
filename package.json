@@ -1,12 +1,8 @@
 {
   "name": "reflex-virtual-dom-driver",
-  "version": "0.2.5",
+  "version": "1.0.0",
   "description": "virtual-dom based driver for reflex",
-  "keywords": [
-    "reflex",
-    "react",
-    "renderer"
-  ],
+  "keywords": ["reflex", "react", "renderer"],
   "author": "Irakli Gozalishvili <rfobic@gmail.com> (http://jeditoolkit.com)",
   "homepage": "https://github.com/mozilla/reflex-virtual-dom-driver",
   "main": "index",
@@ -20,10 +16,10 @@
     "babel-preset-flow-node": "^1.0.2",
     "babel-register": "6.24.1",
     "blue-tape": "^1.0.0",
-    "flow-bin": "0.48.0",
+    "flow-bin": "^0.49.1",
     "flow-copy-source": "^1.2.0",
-    "jsdom": "^11.0.0",
-    "reflex": "^1.0.0"
+    "jsdom": "^11.1.0",
+    "reflex": "^1.1.0"
   },
   "scripts": {
     "test": "npm run test:flow && npm run test:tape",
@@ -39,10 +35,7 @@
     "precommit": "lint-staged"
   },
   "lint-staged": {
-    "*.js": [
-      "prettier --parser flow --no-semi --write",
-      "git add"
-    ]
+    "*.js": ["prettier --parser flow --no-semi --write", "git add"]
   },
   "repository": "https://github.com/mozilla/reflex-virtual-dom-driver",
   "license": "MIT"
