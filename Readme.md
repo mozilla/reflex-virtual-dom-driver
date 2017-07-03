@@ -9,16 +9,12 @@ This is a [reflex][] application view driver that uses [virtual-dom][] library f
 ## Usage
 
 ```js
-import * as App from "./app"
+import {init, update, view} from "./app"
 import {start} from "reflex"
 import {Renderer} from "reflex-virtual-dom-driver"
 
 const renderer = new Renderer({target: document.body})
-const app = start({
-  initial: App.initialize(),
-  update: App.update,
-  view: App.view
-}, ({view}) => {
+const app = start({init, update, view}, ({view}) => {
   renderer.render(view)
 })
 ```
