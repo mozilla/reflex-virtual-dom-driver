@@ -1,8 +1,13 @@
 /* @flow */
 
+import { Node } from "reflex-driver"
+import currentVersion from "virtual-dom/vnode/version"
+
 // vtext
 
-export interface VirtualText {
+export const version: string = currentVersion
+
+export interface VirtualText extends Node {
   type: "VirtualText",
   version: string,
   text: string
@@ -13,18 +18,18 @@ export interface VirtualText {
 export type HookTarget<extension> = Element & EventTarget & extension
 
 export interface Hook<extension> {
-  hook: (node: HookTarget<extension>, key: string, previous: any) => void,
-  unhook: (node: HookTarget<extension>, key: string, next: any) => void
+  hook(node: HookTarget<extension>, key: string, previous: any): void,
+  unhook(node: HookTarget<extension>, key: string, next: any): void
 }
 
 export type HookDictionary<extension> = { [key: string]: Hook<extension> }
 
 export interface AttributeDictionary {
-  [key: string]: string | number | boolean
+  [key: string]: void | null | string | number | boolean
 }
 
 export interface StyleDictionary {
-  [key: string]: string | number | boolean
+  [key: string]: null | string | number | boolean
 }
 
 export interface VirtualProperties {
@@ -39,14 +44,14 @@ export interface VirtualProperties {
     | EventListener
 }
 
-export interface VirtualNode {
+export interface VirtualNode extends Node {
   type: "VirtualNode",
   version: string,
 
   tagName: string,
-  properties: VirtualProperties,
-  children: Array<Entity>,
-  hooks: ?HookDictionary<any>,
+  // properties: VirtualProperties,
+  children: Array<VNode>,
+  hooks: ?HookDictionary<*>,
 
   count: number,
   hasWidgets: boolean,
@@ -56,24 +61,22 @@ export interface VirtualNode {
 
 // thunk
 
-export interface Thunk {
+export interface VirtualThunk extends Node {
   type: "Thunk",
   vnode: ?VNode,
-  render(previous: ?Entity): VNode
+  render(previous: ?VNode): VNode
 }
 
 // widget
 
-export interface Widget {
+export interface Widget extends Node {
   type: "Widget",
   init(): HTMLElement,
   update(previous: Widget, element: HTMLElement): ?HTMLElement,
   destroy(element: HTMLElement): void
 }
 
-export type VNode = VirtualText | VirtualNode | Widget
-
-export type Entity = VirtualText | VirtualNode | Thunk | Widget
+export type VNode = VirtualText | VirtualNode | VirtualThunk | Widget
 
 // virtual-dom/diff
 
@@ -89,18 +92,18 @@ export type THUNK = 8
 
 export type VirtualPatch<
   type: NONE | VTEXT | VNODE | WIDGET | PROPS | ORDER | INSERT | REMOVE | THUNK
-> = { type: type, vnode: Entity, patch: any }
+> = { type: type, vnode: VNode, patch: any }
 
 export type Delta = {
-  a: Entity,
-  [key: number]: VirtualPatch<any> | Array<VirtualPatch<any>>
+  a: VNode,
+  [key: number]: VirtualPatch<*> | Array<VirtualPatch<*>>
 }
 
-export type diff = (left: Entity, right: Entity) => Delta
+export type diff = (left: VNode, right: VNode) => Delta
 
 // virtual-dom/create-element
 
-export type createElement = (left: Entity) => HTMLElement
+export type createElement = (left: VNode) => HTMLElement
 
 // virtual-dom/patch
 export type patch = (target: HTMLElement, delta: Delta) => void

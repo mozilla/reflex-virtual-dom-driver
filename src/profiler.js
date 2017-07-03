@@ -1,6 +1,6 @@
 /* @flow */
 
-import { ThunkNode } from "./thunk"
+import { Thunk } from "./thunk"
 import { Renderer } from "./index"
 
 class Measurements {
@@ -22,10 +22,10 @@ const defaults = {
   onMount: Renderer.prototype.onMount,
   onMounted: Renderer.prototype.onMounted,
 
-  onCompare: ThunkNode.prototype.onCompare,
-  onCompared: ThunkNode.prototype.onCompared,
-  onCompute: ThunkNode.prototype.onCompute,
-  onComputed: ThunkNode.prototype.onComputed
+  onCompare: Thunk.prototype.onCompare,
+  onCompared: Thunk.prototype.onCompared,
+  onCompute: Thunk.prototype.onCompute,
+  onComputed: Thunk.prototype.onComputed
 }
 
 const log = (event, mesurements) => {
@@ -85,10 +85,10 @@ export const start = () => {
   Renderer.prototype.onMount = profiler.onMount
   Renderer.prototype.onMounted = profiler.onMounted
 
-  ThunkNode.prototype.onCompare = profiler.onCompare
-  ThunkNode.prototype.onCompared = profiler.onCompared
-  ThunkNode.prototype.onCompute = profiler.onCompute
-  ThunkNode.prototype.onComputed = profiler.onComputed
+  Thunk.prototype.onCompare = profiler.onCompare
+  Thunk.prototype.onCompared = profiler.onCompared
+  Thunk.prototype.onCompute = profiler.onCompute
+  Thunk.prototype.onComputed = profiler.onComputed
 }
 
 export const stop = () => {
@@ -101,10 +101,10 @@ export const stop = () => {
   Renderer.prototype.onMount = defaults.onMount
   Renderer.prototype.onMounted = defaults.onMounted
 
-  ThunkNode.prototype.onCompare = defaults.onCompare
-  ThunkNode.prototype.onCompared = defaults.onCompared
-  ThunkNode.prototype.onCompute = defaults.onCompute
-  ThunkNode.prototype.onComputed = defaults.onComputed
+  Thunk.prototype.onCompare = defaults.onCompare
+  Thunk.prototype.onCompared = defaults.onCompared
+  Thunk.prototype.onCompute = defaults.onCompute
+  Thunk.prototype.onComputed = defaults.onComputed
 }
 
 export const getLastMeasurements = () => profiler.mesurements

@@ -1,17 +1,17 @@
 /* @flow */
 
-import version from "virtual-dom/vnode/version"
-import { VirtualText } from "reflex"
+import { VirtualText, version } from "./virtual-dom"
+import { Driver, Node } from "reflex-driver"
 
-export class TextNode implements VirtualText {
-  $type: "VirtualText" = "VirtualText"
+export class Text implements VirtualText {
+  version = version
   type: "VirtualText" = "VirtualText"
-  version: string = version
   text: string
 
   constructor(text: string) {
     this.text = text
   }
+  renderWith<node: Node>(driver: Driver<node>): node {
+    return driver.createTextNode(this.text)
+  }
 }
-
-export const text = (text: string): TextNode => new TextNode(text)

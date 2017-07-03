@@ -1,21 +1,18 @@
 /* @flow */
 
-import type {
-  PropertyDictionary,
-  AttributeDictionary,
-  VirtualTree,
-  VirtualNode
-} from "reflex"
+import type { Properties, Attributes } from "reflex-driver"
+import { VirtualNode, version } from "./virtual-dom"
+import type { VNode } from "./virtual-dom"
+import { Driver, Node } from "reflex-driver"
 
 import isVirtualNode from "virtual-dom/vnode/is-vnode"
 import isWidget from "virtual-dom/vnode/is-widget"
 import isThunk from "virtual-dom/vnode/is-thunk"
 import isHook from "virtual-dom/vnode/is-vhook"
-import version from "virtual-dom/vnode/version"
 import SoftSetHook from "virtual-dom/virtual-hyperscript/hooks/soft-set-hook"
-import { text } from "./text"
-import { empty } from "blanks/lib/array"
-import { blank } from "blanks/lib/object"
+import { Text } from "./text"
+import { empty } from "blanks/array"
+import { blank } from "blanks/object"
 import { Hook } from "./hook"
 import type { Dictionary } from "object-as-dictionary"
 import type { HookDictionary } from "./hook"
@@ -24,31 +21,34 @@ import { supportedEvents, eventHandler } from "./hook/event-handler"
 import { supportedAttributes } from "./hook/attribute"
 import { supportedProperties } from "./hook/property"
 
-const noProperties: PropertyDictionary = (blank: any)
-export class ElementNode implements VirtualNode {
-  $type: "VirtualNode" = "VirtualNode"
-  type: "VirtualNode" = "VirtualNode"
-  version: number = version
+const noProperties: Properties = (blank: any)
+export class Element implements VirtualNode {
+  type = "VirtualNode"
+  version = version
+  namespaceURI: ?string
 
   tagName: string
   namespace: ?string
   key: ?string
-  properties: PropertyDictionary
-  children: Array<VirtualTree>
+  properties: Properties
+  children: Array<VNode>
   count: number
   descendants: number
   hasWidgets: boolean
   hasThunks: boolean
   hooks: ?HookDictionary<*>
+  descendantHooks: boolean
 
   constructor(
+    namespaceURI: ?string,
     tagName: string,
-    namespace: ?string,
-    properties: PropertyDictionary,
-    children: Array<VirtualTree>
+    maybeProperties: ?Properties,
+    maybeChildren: ?Array<string | VNode>
   ) {
+    const properties = maybeProperties || noProperties
+    const children = ((maybeChildren: any): ?Array<VNode>) || empty
     this.tagName = tagName
-    this.namespace = namespace
+    this.namespace = this.namespaceURI = namespaceURI
     this.key = properties.key != null ? String(properties.key) : null
     this.children = children
 
@@ -59,9 +59,8 @@ export class ElementNode implements VirtualNode {
     let descendantHooks = false
 
     let hooks: HookDictionary<*> | null = null
-    let attributes: null | AttributeDictionary = properties.attributes != null
-      ? properties.attributes
-      : null
+    let attributes: null | Attributes =
+      properties.attributes != null ? properties.attributes : null
 
     for (let key in properties) {
       if (properties.hasOwnProperty(key)) {
@@ -71,7 +70,7 @@ export class ElementNode implements VirtualNode {
             hooks = {}
           }
 
-          hooks[key] = property
+          hooks[key] = (property: any)
         } else {
           // Event handlers
           if (supportedEvents[key] != null) {
@@ -82,7 +81,7 @@ export class ElementNode implements VirtualNode {
             // TODO: Find out why flow did not cought that proprety
             // could be void here
             if (property != null) {
-              const handler = eventHandler(property)
+              const handler = eventHandler((property: any))
               hooks[key] = handler
               properties[key] = handler
             }
@@ -111,9 +110,8 @@ export class ElementNode implements VirtualNode {
             // boolean than treate attribute as a flag if `true` just set
             // attribute with no value otherwise omit to remove it.
             if (property !== null && property !== false) {
-              attributes[supportedAttributes[key]] = property === true
-                ? ""
-                : property
+              attributes[supportedAttributes[key]] =
+                property === true ? "" : ((property: any): string)
             }
 
             delete properties[key]
@@ -125,7 +123,7 @@ export class ElementNode implements VirtualNode {
               attributes = ({}: any)
             }
 
-            attributes[key] = property
+            attributes[key] = ((property: any): string)
             delete properties[key]
           }
         }
@@ -141,11 +139,8 @@ export class ElementNode implements VirtualNode {
       const child = children[index]
 
       if (typeof child === "string") {
-        children[index] = text(child)
-      } else if (child.$type === "LazyTree") {
-        children[index] = child.force()
-        index = index - 1
-      } else if (child instanceof ElementNode) {
+        children[index] = new Text(child)
+      } else if (child instanceof Element) {
         descendants += child.count
 
         if (!hasWidgets && child.hasWidgets) {
@@ -176,17 +171,13 @@ export class ElementNode implements VirtualNode {
     this.hasThunks = hasThunks
     this.properties = properties
     this.hooks = hooks
+    this.descendantHooks = descendantHooks
+  }
+  renderWith<node: Node>(driver: Driver<node>): node {
+    return driver.createElement(
+      this.tagName,
+      this.properties,
+      this.children.map((child: Node): node => child.renderWith(driver))
+    )
   }
 }
-
-export const node = (
-  tagName: string,
-  properties: ?PropertyDictionary,
-  children: ?Array<VirtualTree>
-): ElementNode =>
-  new ElementNode(
-    tagName,
-    null,
-    properties == null ? noProperties : properties,
-    children == null ? empty : children
-  )

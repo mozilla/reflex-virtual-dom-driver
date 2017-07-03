@@ -3,12 +3,13 @@
 import diff from "virtual-dom/diff"
 import createElement from "virtual-dom/create-element"
 import patch from "virtual-dom/patch"
-import { text } from "./text"
-import { node } from "./node"
-import { thunk } from "./thunk"
-
-import type { Address, VirtualTree } from "reflex"
-import { Driver, VirtualRoot } from "reflex"
+import { Text } from "./text"
+import { Element } from "./element"
+import { Thunk } from "./thunk"
+import { Driver, Node } from "reflex-driver"
+import type { Properties } from "reflex-driver"
+import type { VNode } from "./virtual-dom"
+import * as DOM from "./dom"
 
 // Invariants:
 // 1. In the NO_REQUEST state, there is never a scheduled animation frame.
@@ -84,46 +85,79 @@ class AnimationScheduler {
 
 let requestAnimationFrameTime = 0
 
-const requestAnimationFrame = typeof window != "undefined" &&
-  window.requestAnimationFrame != null
-  ? window.requestAnimationFrame
-  : callback => {
-      const now = Date.now()
-      const delta = Math.max(0, 16 - (now - requestAnimationFrameTime))
-      requestAnimationFrameTime = now + delta
-      return setTimeout(callback, delta, requestAnimationFrameTime)
-    }
+const requestAnimationFrame =
+  typeof window != "undefined" && window.requestAnimationFrame != null
+    ? window.requestAnimationFrame
+    : callback => {
+        const now = Date.now()
+        const delta = Math.max(0, 16 - (now - requestAnimationFrameTime))
+        requestAnimationFrameTime = now + delta
+        return setTimeout(callback, delta, requestAnimationFrameTime)
+      }
 
-const cancelAnimationFrame = typeof window != "undefined" &&
-  window.cancelAnimationFrame != null
-  ? window.cancelAnimationFrame
-  : clearTimeout
+const cancelAnimationFrame =
+  typeof window != "undefined" && window.cancelAnimationFrame != null
+    ? window.cancelAnimationFrame
+    : clearTimeout
 
 const animationScheduler = new AnimationScheduler()
 
 export interface Configuration {
-  target: Element,
+  target: DOM.Element,
   timeGroupName?: string
 }
 
-export class Renderer implements Driver {
-  target: Element
-  mount: ?(Element & { reflexTree?: VirtualTree })
-  value: VirtualRoot
+export class Renderer implements Driver<VNode> {
+  target: DOM.Element
+  mount: ?(DOM.Element & { reflexTree?: VNode })
+  value: Node
   state: number
-  address: Address<VirtualRoot>
   options: { document: Document }
 
+  createTextNode(text: string): VNode {
+    return new Text(text)
+  }
+  createElement(
+    tagName: string,
+    properties: ?Properties,
+    children: ?Array<string | VNode>
+  ) {
+    return new Element(null, tagName, properties, children)
+  }
+  createElementNS(
+    namespaceURI: string,
+    tagName: string,
+    properties: ?Properties,
+    children: ?Array<string | VNode>
+  ) {
+    return new Element(namespaceURI, tagName, properties, children)
+  }
+  createThunk<a, b, c, d, e, f, g, h, i, j>(
+    key: string,
+    view: (
+      a0: a,
+      a1: b,
+      a2: c,
+      a3: d,
+      a4: e,
+      a5: f,
+      a6: g,
+      a7: h,
+      a8: i,
+      a9: j
+    ) => VNode,
+    args: [a, b, c, d, e, f, g, h, i, j]
+  ): VNode {
+    return new Thunk(key, view, (args: any))
+  }
   execute: (time: Time) => void
-  node = node
-  thunk = thunk
-  text = text
   constructor({ target }: Configuration) {
     this.state = NO_REQUEST
     this.target = target
-    this.mount = target.children.length !== 1
-      ? null
-      : target.children[0].reflexTree == null ? null : target.children[0]
+    this.mount =
+      target.children.length !== 1
+        ? null
+        : target.children[0].reflexTree == null ? null : target.children[0]
 
     this.execute = this.execute.bind(this)
 
@@ -132,7 +166,7 @@ export class Renderer implements Driver {
   toString(): string {
     return `Renderer({target: ${String(this.target)}})`
   }
-  render(value: VirtualRoot) {
+  render(value: Node): void {
     if (this.value !== value) {
       this.value = value
       animationScheduler.schedule(this.execute)
@@ -143,20 +177,20 @@ export class Renderer implements Driver {
     this.draw(this.value.renderWith(this))
     this.onRendered(this)
   }
-  draw(tree: VirtualTree) {
+  draw(node: VNode) {
     const { mount, target } = this
     if (mount) {
       this.onDiff(this)
-      const delta = diff(mount.reflexTree, tree)
+      const delta = diff(mount.reflexTree, node)
       this.onDiffed(this)
       this.onPatch(this)
       patch(mount, delta)
-      mount.reflexTree = tree
+      mount.reflexTree = node
       this.onPatched(this)
     } else {
       this.onMount(this)
-      const mount = createElement(tree, this.options)
-      mount.reflexTree = tree
+      const mount = createElement(node, this.options)
+      mount.reflexTree = node
       target.innerHTML = ""
       this.mount = mount
       target.appendChild(mount)

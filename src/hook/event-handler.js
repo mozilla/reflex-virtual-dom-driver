@@ -4,7 +4,6 @@ import { dictionary } from "object-as-dictionary"
 
 import type { Dictionary } from "object-as-dictionary"
 import type { Hook } from "../hook"
-import type { Address } from "reflex"
 
 export type EventConfig = { type: string, capture: boolean }
 
@@ -162,7 +161,7 @@ export class EventHandler {
 }
 
 export const eventHandler = <message>(
-  address: Address<message>
+  address: (input: message) => void
 ): Hook<Target> => {
   const handler = address.reflexEventListener
   if (handler == null) {

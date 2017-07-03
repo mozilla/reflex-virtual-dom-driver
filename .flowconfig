@@ -4,6 +4,7 @@
 .*/node_modules/tap/.*
 .*/node_modules/flow-bin/.*
 .*/examples/.*
+.*/node_modules/documentation/.*
 
 [libs]
 

@@ -7,13 +7,13 @@
 import { start, Task, Effects, Application, html } from "reflex"
 import * as profiler from "../profiler"
 import { Renderer } from "../"
-import test from "tape"
+import test from "blue-tape"
 
 // TODO: Consider https://github.com/Raynos/min-document instead
-import * as DOM from "jsdom"
+import { JSDOM } from "jsdom"
 
-test("render list", test => {
-  const document = DOM.jsdom("<html><body>/body></html>")
+test("render list", async test => {
+  const { window } = new JSDOM("<html><body>/body></html>")
 
   const flags = null
   const init = () => [
@@ -31,24 +31,23 @@ test("render list", test => {
       model.map(title => html.li({ key: title }, [title]))
     )
 
-  const renderer = new Renderer({ target: document.body })
+  const renderer = new Renderer({ target: window.document.body })
   const app = start({ flags, init, update, view }, ({ view, task }) => {
     renderer.render(view)
     Task.perform(task)
   })
 
-  renderer.onRendered = () => {
-    test.equal(
-      document.body.innerHTML,
-      `<ul id="main"><li>Buy Milk</li><li>Write Tests</li><li>Asses Results</li></ul>`,
-      "content was rendered into body"
-    )
-    test.end()
-  }
+  await onRender(renderer)
+
+  test.equal(
+    window.document.body.innerHTML,
+    `<ul id="main"><li>Buy Milk</li><li>Write Tests</li><li>Asses Results</li></ul>`,
+    "content was rendered into body"
+  )
 })
 
-test("re-render list", test => {
-  const document = DOM.jsdom("<html><body>/body></html>")
+test("re-render list", async test => {
+  const { window } = new JSDOM("<html><body>/body></html>")
 
   const flags = null
   const init = () => [
@@ -74,49 +73,39 @@ test("re-render list", test => {
       model.map(title => html.li({ key: title }, [title]))
     )
 
-  const renderer = new Renderer({ target: document.body })
+  const renderer = new Renderer({ target: window.document.body })
   const app = start({ flags, init, update, view }, ({ view, task }) => {
     renderer.render(view)
     Task.perform(task)
   })
 
-  const steps = [
-    () => {
-      test.equal(
-        document.body.innerHTML,
-        `<ul id="main"><li>Buy Milk</li><li>Write Tests</li><li>Asses Results</li></ul>`,
-        "items were rendered"
-      )
+  await onRender(renderer)
+  test.equal(
+    `<ul id="main"><li>Buy Milk</li><li>Write Tests</li><li>Asses Results</li></ul>`,
+    window.document.body.innerHTML,
+    "items were rendered"
+  )
 
-      app.send({ type: "sort" })
-    },
-    () => {
-      test.equal(
-        document.body.innerHTML,
-        `<ul id="main"><li>Asses Results</li><li>Buy Milk</li><li>Write Tests</li></ul>`,
-        "items were sorted"
-      )
-      app.send({ type: "reverse" })
-    },
-    () => {
-      test.equal(
-        document.body.innerHTML,
-        `<ul id="main"><li>Write Tests</li><li>Buy Milk</li><li>Asses Results</li></ul>`,
-        "items were reversed"
-      )
-    }
-  ]
+  app.send({ type: "sort" })
 
-  renderer.onRendered = () => {
-    steps.shift()()
-    if (steps.length === 0) {
-      test.end()
-    }
-  }
+  await onRender(renderer)
+  test.equal(
+    `<ul id="main"><li>Asses Results</li><li>Buy Milk</li><li>Write Tests</li></ul>`,
+    window.document.body.innerHTML,
+    "items were sorted"
+  )
+  app.send({ type: "reverse" })
+
+  await onRender(renderer)
+  test.equal(
+    `<ul id="main"><li>Write Tests</li><li>Buy Milk</li><li>Asses Results</li></ul>`,
+    window.document.body.innerHTML,
+    "items were reversed"
+  )
 })
 
-test("rendering is batched", test => {
-  const document = DOM.jsdom("<html><body>/body></html>")
+test("rendering is batched", async test => {
+  const { window } = new JSDOM("<html><body>/body></html>")
 
   const flags = null
   const init = () => [
@@ -142,36 +131,32 @@ test("rendering is batched", test => {
       model.map(title => html.li({ key: title }, [title]))
     )
 
-  const renderer = new Renderer({ target: document.body })
+  const renderer = new Renderer({ target: window.document.body })
   const app = start({ flags, init, update, view }, ({ view, task }) => {
     renderer.render(view)
     Task.perform(task)
   })
 
-  const steps = [
-    () => {
-      test.equal(
-        document.body.innerHTML,
-        `<ul id="main"><li>Buy Milk</li><li>Write Tests</li><li>Asses Results</li></ul>`,
-        "items were rendered"
-      )
+  await onRender(renderer)
+  test.equal(
+    window.document.body.innerHTML,
+    `<ul id="main"><li>Buy Milk</li><li>Write Tests</li><li>Asses Results</li></ul>`,
+    "items were rendered"
+  )
 
-      app.send({ type: "sort" })
-      app.send({ type: "reverse" })
-    },
-    () => {
-      test.equal(
-        document.body.innerHTML,
-        `<ul id="main"><li>Write Tests</li><li>Buy Milk</li><li>Asses Results</li></ul>`,
-        "items were sorted & reversed"
-      )
-    }
-  ]
+  const nextRender = onRender(renderer)
 
-  renderer.onRendered = () => {
-    steps.shift()()
-    if (steps.length === 0) {
-      test.end()
-    }
-  }
+  app.send({ type: "sort" })
+  app.send({ type: "reverse" })
+
+  await nextRender
+
+  test.equal(
+    window.document.body.innerHTML,
+    `<ul id="main"><li>Write Tests</li><li>Buy Milk</li><li>Asses Results</li></ul>`,
+    "items were sorted & reversed"
+  )
 })
+
+const onRender = renderer =>
+  new Promise(resolve => (renderer.onRender = resolve))

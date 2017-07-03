@@ -1,35 +1,38 @@
 /* @flow */
 
-import type { DOM, Address, Thunk } from "reflex"
+import { VirtualThunk, VirtualText, VirtualNode, Widget } from "./virtual-dom"
+import type { VNode } from "./virtual-dom"
+import { Driver, Node } from "reflex-driver"
+
+type Address<a> = (input: a) => void
 
 const redirect = (addressBook, index) => action => addressBook[index](action)
 
-export class ThunkNode implements Thunk {
-  $type: "Thunk" = "Thunk"
+export class Thunk implements VirtualThunk {
   type: "Thunk" = "Thunk"
   key: string
-  view: (...args: Array<*>) => DOM
+  view: (...args: Array<*>) => *
   args: Array<*>
 
   addressBook: ?Array<Address<mixed>>
-  value: ?DOM
+  value: ?VNode
+  vnode: ?VNode
 
-  constructor(
-    key: string,
-    view: (...args: Array<*>) => DOM,
-    ...args: Array<*>
-  ) {
+  constructor(key: string, view: (...args: Array<*>) => *, args: Array<*>) {
     this.key = key
     this.view = view
     this.args = args
     this.addressBook = null
     this.value = null
   }
-  render(previous: ?DOM): DOM {
+  renderWith<node: Node>(driver: Driver<node>): node {
+    return driver.createThunk(this.key, this.view, (this.args: any))
+  }
+  render(previous: ?VNode): VNode {
     this.onCompare(this)
 
     if (
-      previous instanceof ThunkNode &&
+      previous instanceof Thunk &&
       previous.value != null &&
       previous.addressBook != null
     ) {
@@ -130,29 +133,3 @@ export class ThunkNode implements Thunk {
 }
 
 let profile = null
-
-export const thunk = <a, b, c, d, e, f, g, h, i, j>(
-  key: string,
-  view: (
-    a0: a,
-    a1: b,
-    a2: c,
-    a3: d,
-    a4: e,
-    a5: f,
-    a6: g,
-    a7: h,
-    a8: i,
-    a9: j
-  ) => DOM,
-  a0: a,
-  a1: b,
-  a2: c,
-  a3: d,
-  a4: e,
-  a5: f,
-  a6: g,
-  a7: h,
-  a8: i,
-  a9: j
-): ThunkNode => new ThunkNode(key, view, a0, a1, a2, a3, a4, a5, a6, a7, a8, a9)
